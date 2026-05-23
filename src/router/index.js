@@ -11,11 +11,11 @@ const routes = [
         name: 'Orders',
         component: () => import('@/views/Orders.vue')
     },
-    // {
-    //     path: '/profile',
-    //     name: 'Profile',
-    //     component: () => import('@/views/Profile.vue')
-    // }
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('@/views/Profile.vue')
+    }
 ]
 
 const router = createRouter({

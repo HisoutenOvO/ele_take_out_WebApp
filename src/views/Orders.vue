@@ -35,7 +35,7 @@
         <!-- 第一行：店家小图 + 名称 + 状态 -->
         <div class="order-header">
           <div class="shop-mini">
-            <span class="mini-img">🏪</span>
+            <img :src="getShopImg(order.shopName)" class="mini-img" />
             <span class="shop-name">{{ order.shopName }}</span>
           </div>
           <span class="order-status">{{ order.statusText }}</span>
@@ -44,7 +44,7 @@
         <!-- 第二行：商品大图 + 信息 -->
         <div class="order-body">
           <!-- 商品图片（正方形，和商家卡片要求一致） -->
-          <span class="goods-img">{{ order.goodsEmoji }}</span>
+          <img :src="order.goodsImg" class="goods-img" />
 
           <div class="goods-info">
             <div class="info-row1">
@@ -70,6 +70,17 @@
 import { ref, computed } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
 
+// emoji 映射
+const getEmoji = (name) => {
+  const map = {
+    '必胜客': '🍕',
+    '麦当劳': '🍔',
+    '海底捞': '🍲',
+    '瑞幸咖啡': '☕',
+    '肯德基': '🍗'
+  }
+  return map[name] || '🏪'
+}
 const searchKeyword = ref('')
 const activeTab = ref('all')
 
@@ -84,10 +95,9 @@ const orders = ref([
   {
     id: 1,
     shopName: '必胜客',
-    shopMiniImg: '',
     status: 'delivered',
     statusText: '已送达',
-    goodsEmoji: '🍕',
+    goodsImg: '/img/sj08.png',
     content: '超级至尊披萨+可乐',
     price: 128,
     quantity: 2
@@ -95,10 +105,9 @@ const orders = ref([
   {
     id: 2,
     shopName: '麦当劳',
-    shopMiniImg: '',
     status: 'canceled',
     statusText: '已取消',
-    goodsEmoji: '🍔',
+    goodsImg: '/img/sj07.png',
     content: '巨无霸套餐',
     price: 42,
     quantity: 1
@@ -106,10 +115,9 @@ const orders = ref([
   {
     id: 3,
     shopName: '瑞幸咖啡',
-    shopMiniImg: '',
     status: 'ongoing',
     statusText: '配送中',
-    goodsEmoji: '☕',
+    goodsImg: '/img/sp06.png',
     content: '生椰拿铁+厚乳拿铁',
     price: 58,
     quantity: 2
@@ -117,16 +125,24 @@ const orders = ref([
   {
     id: 4,
     shopName: '海底捞',
-    shopMiniImg: '',
     status: 'refunded',
     statusText: '已退款',
-    goodsEmoji: '🍲',
+    goodsImg: '/img/sp05.png',
     content: '火锅底料套餐',
     price: 299,
     quantity: 1
   }
 ])
-
+const getShopImg = (name) => {
+  const map = {
+    '必胜客': '/img/sj08.png',
+    '麦当劳': '/img/sj09.png',
+    '海底捞': '/img/sp03.png',
+    '瑞幸咖啡': '/img/sp01.png',
+    '肯德基': '/img/sp02.png'
+  }
+  return map[name] || '/img/default.png'
+}
 // 根据状态过滤
 const filteredOrders = computed(() => {
   let list = orders.value
@@ -283,6 +299,8 @@ const handleSearch = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
+  object-fit: cover;
 }
 
 .shop-name {
@@ -312,6 +330,7 @@ const handleSearch = () => {
   align-items: center;
   justify-content: center;
   font-size: 48px;
+  object-fit: cover;
 }
 
 .goods-info {

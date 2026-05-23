@@ -33,6 +33,8 @@
   text-decoration: none;
   color: #999;
   font-size: 12px;
+  height: 48px;           /* 固定高度，防止撑开 */
+  justify-content: center;
 }
 
 .nav-item.active {
@@ -41,9 +43,15 @@
 
 .nav-icon {
   font-size: 22px;
+  line-height: 1;
 }
 
 .nav-text {
   font-size: 12px;
+  line-height: 1;
+  font-weight: 400;       /* 始终用相同字重 */
 }
-</style>
+
+.nav-item.active .nav-text {
+  font-weight: 400;       /* 激活态也不加粗，避免高度变化 */
+}</style>

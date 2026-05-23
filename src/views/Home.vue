@@ -27,13 +27,16 @@
 
     <!-- 中间滚动区域 -->
     <div class="scroll">
-      <div class="title">为你推荐附近的商家</div>
+      <div class="recommend-header">
+        <span class="line"></span>
+        <span class="title-text">为你推荐附近的商家</span>
+        <span class="line"></span>
+      </div>
 
       <!-- 卡片列表 -->
       <div v-for="shop in shops" :key="shop.id" class="card">
         <!-- 左侧图片：直接放emoji，无背景，占1/3 -->
-        <span class="card-emoji">{{ getEmoji(shop.name) }}</span>
-
+        <img :src="getShopImg(shop.name)" class="card-emoji" alt="emoji" />
         <!-- 右侧详细信息容器 -->
         <div class="card-detail">
           <!-- 第1行：店名 -->
@@ -44,7 +47,7 @@
           <!-- 第2行：评分 月售 | 时间 距离 -->
           <div class="line2">
             <div class="line2-left">
-              <span class="rating">{{ shop.rating }}</span>
+              <span class="rating">{{ shop.rating }}分</span>
               <span class="monthly-sales">月售{{ shop.monthlySales }}+</span>
             </div>
             <div class="line2-right">
@@ -57,7 +60,8 @@
           <div class="line3">
             <div class="line3-left">
               <span class="min-price">起送¥{{ shop.minPrice }}</span>
-              <span class="delivery-fee">配送¥{{ shop.deliveryFee }}</span>
+              <span class="delivery-fee strikethrough">配送¥{{ shop.deliveryFee }}</span>
+              <span class="delivery-fee">配送¥{{ shop.deliveryFee-2 }}</span>
             </div>
             <div class="line3-right">
               <span class="campus-tag" v-if="shop.campus">校园送</span>
@@ -69,9 +73,9 @@
             <span class="shop-desc">{{ shop.description }}</span>
           </div>
 
-          <!-- 第5行：优惠 -->
-          <div class="line5" v-if="shop.discount">
-            <span class="discount">{{ shop.discount }}</span>
+          <!-- 第5行：优惠标签列表 -->
+          <div class="line5" v-if="shop.discounts && shop.discounts.length">
+            <span v-for="(item, idx) in shop.discounts" :key="idx" class="discount">{{ item }}</span>
           </div>
         </div>
       </div>
@@ -96,16 +100,16 @@ const searchKeyword = ref('')
 const shops = ref([
   {
     id: 1,
-    name: '必胜客（1111111111）',
+    name: '必胜客之超级强迪',
     rating: 4.6,
-    monthlySales: 500,
+    monthlySales: 2000,
     deliveryTime: 42,
     distance: '1.2km',
     minPrice: 88,
     deliveryFee: 5,
     campus: true,
     description: '品质西餐·新鲜现做',
-    discount: '满65减5'
+    discounts: ['满65减5', '满100减15', '新客立减10']
   },
   {
     id: 2,
@@ -118,7 +122,7 @@ const shops = ref([
     deliveryFee: 3,
     campus: false,
     description: '经典汉堡·快速出餐',
-    discount: '满59减15'
+    discounts: ['满65减5', '满100减15', '新客立减10']
   },
   {
     id: 3,
@@ -131,7 +135,7 @@ const shops = ref([
     deliveryFee: 8,
     campus: false,
     description: '火锅盛宴·极致服务',
-    discount: '满199减30'
+    discounts: ['满65减5', '满100减15', '新客立减10']
   },
   {
     id: 4,
@@ -144,11 +148,11 @@ const shops = ref([
     deliveryFee: 2,
     campus: true,
     description: '大师咖啡·便捷快取',
-    discount: '9.9专区'
+    discounts: ['满65减5', '满100减15', '新客立减10']
   },
   {
     id: 5,
-    name: '肯德基（1111111111）',
+    name: '肯德基',
     rating: 4.8,
     monthlySales: 1500,
     deliveryTime: 35,
@@ -157,20 +161,19 @@ const shops = ref([
     deliveryFee: 3,
     campus: false,
     description: '炸鸡专家·疯狂星期四',
-    discount: '满30减15'
+    discounts: ['满65减5', '满100减15', '新客立减10']
   }
 ])
 
-// emoji 映射
-const getEmoji = (name) => {
+const getShopImg = (name) => {
   const map = {
-    '必胜客（1111111111）': '🍕',
-    '麦当劳': '🍔',
-    '海底捞': '🍲',
-    '瑞幸咖啡': '☕',
-    '肯德基（1111111111）': '🍗'
+    '必胜客': '/img/sj08.png',
+    '麦当劳': '/img/sj09.png',
+    '海底捞': '/img/sp01.png',
+    '瑞幸咖啡': '/img/sp02.png',
+    '肯德基': '/img/sp03.png'
   }
-  return map[name] || '🏪'
+  return map[name] || '/img/sj01.png'
 }
 
 const handleSearch = () => {
@@ -266,19 +269,28 @@ const handleSearch = () => {
   font-weight: 500;
   cursor: pointer;
 }
-
+.recommend-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 12px;
+}
+.line {
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+.title-text {
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 /* 中间滚动区域 */
 .scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 12px;
-}
-
-.title {
-  text-align: center;
-  color: #999;
-  font-size: 14px;
-  margin-bottom: 16px;
+  padding: 0 12px 16px;  /* 上边距 0，左右 12px，下边距 16px */
 }
 
 /* 卡片 */
@@ -301,6 +313,7 @@ const handleSearch = () => {
   font-size: 64px;
   background: transparent;
   border-radius: 12px;
+  object-fit: cover;
 }
 
 .card-detail {
@@ -349,7 +362,7 @@ const handleSearch = () => {
 .line2-right {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 .time, .distance {
   font-size: 14px;
@@ -426,5 +439,9 @@ const handleSearch = () => {
 }
 .bottom div:first-child {
   color: #ffc107;
+}
+.strikethrough {
+  text-decoration: line-through;
+  color: #999;
 }
 </style>

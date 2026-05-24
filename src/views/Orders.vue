@@ -4,7 +4,7 @@
     <div class="top-fixed">
       <!-- 搜索框 -->
       <div class="search-bar">
-        <span class="search-icon">🔍</span>
+        <i class="fa-brands fa-sistrix search-icon" style="flex:0 0 6vw;"></i>
         <input
             v-model="searchKeyword"
             placeholder="搜索订单"
@@ -31,7 +31,7 @@
 
     <!-- 中间可滚动订单列表 -->
     <div class="order-scroll">
-      <div v-for="order in filteredOrders" :key="order.id" class="order-card">
+      <div v-for="order in filteredOrders" :key="order.id" class="order-card" @click="goToShop(order.shopId)">
         <!-- 第一行：店家小图 + 名称 + 状态 -->
         <div class="order-header">
           <div class="shop-mini">
@@ -69,18 +69,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
-// emoji 映射
-const getEmoji = (name) => {
-  const map = {
-    '必胜客': '🍕',
-    '麦当劳': '🍔',
-    '海底捞': '🍲',
-    '瑞幸咖啡': '☕',
-    '肯德基': '🍗'
-  }
-  return map[name] || '🏪'
+const goToShop = (id) => {
+  router.push(`/shop/${id}`)
 }
+
 const searchKeyword = ref('')
 const activeTab = ref('all')
 
@@ -219,13 +214,14 @@ const handleSearch = () => {
 }
 
 .search-btn {
-  background: #ffc107;
+  background: #ED6C2D;
   border: none;
   border-radius: 0 8px 8px 0;
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  color: white;
 }
 
 /* 标签栏 */

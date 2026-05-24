@@ -1,15 +1,15 @@
 <template>
   <div class="bottom-nav">
     <router-link to="/" class="nav-item" active-class="active" exact>
-      <span class="nav-icon">🏠</span>
+      <i class="fa-solid fa-house nav-icon"></i>
       <span class="nav-text">首页</span>
     </router-link>
     <router-link to="/orders" class="nav-item" active-class="active">
-      <span class="nav-icon">📋</span>
+      <i class="fa-regular fa-paste nav-icon"></i>
       <span class="nav-text">订单</span>
     </router-link>
     <router-link to="/profile" class="nav-item" active-class="active">
-      <span class="nav-icon">👤</span>
+      <i class="fa-solid fa-user nav-icon"></i>
       <span class="nav-text">我的</span>
     </router-link>
   </div>

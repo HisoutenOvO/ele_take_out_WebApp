@@ -5,7 +5,7 @@
       <div class="yellow-bar">
         <h1>淘宝闪购</h1>
         <div class="address">
-          <span>📍</span>
+          <i class="fa-solid fa-location-dot" style="font-size: 4vw"></i>
           <span>杭州西湖区·梦想小镇</span>
           <span>▼</span>
         </div>
@@ -14,7 +14,7 @@
 
       <!-- 搜索栏：左侧放大镜图标 -->
       <div class="search-bar">
-        <span class="search-icon">🔍</span>
+        <i class="fa-brands fa-sistrix search-icon" style="flex:0 0 6vw;"></i>
         <input
             v-model="searchKeyword"
             placeholder="搜索商家或商品"
@@ -34,7 +34,7 @@
       </div>
 
       <!-- 卡片列表 -->
-      <div v-for="shop in shops" :key="shop.id" class="card">
+      <div v-for="shop in shops" :key="shop.id" class="card" @click="goToShop(shop.id)">
         <!-- 左侧图片：直接放emoji，无背景，占1/3 -->
         <img :src="getShopImg(shop.name)" class="card-emoji" alt="emoji" />
         <!-- 右侧详细信息容器 -->
@@ -93,7 +93,12 @@
 <script setup>
 import { ref } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
+const goToShop = (id) => {
+  router.push(`/shop/${id}`)
+}
 const searchKeyword = ref('')
 
 // 模拟数据（后期替换为API）
@@ -205,17 +210,19 @@ const handleSearch = () => {
 }
 
 .yellow-bar {
-  background: #ffc107;
+  background: #ED6C2D;
   padding: 12px 16px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   color: white;
+  gap: 12px;   /* logo 和地址之间的间距 */
 }
+
 .yellow-bar h1 {
   font-size: 24px;
   font-weight: 400;
   font-style: italic;
+  flex-shrink: 0;
 }
 .address {
   display: flex;
@@ -228,25 +235,32 @@ const handleSearch = () => {
 }
 
 /* 搜索栏 */
+/* 搜索栏 */
 .search-bar {
   display: flex;
   align-items: center;
   padding: 0 16px 12px;
+  height: 40px;                    /* 统一高度 */
 }
 
 .search-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 16px;
   color: #999;
-  padding: 10px 0 10px 12px;
   background: white;
   border: 1px solid #ddd;
   border-right: none;
-  border-radius: 8px 0 0 8px;
+  border-radius: 20px 0 0 20px;    /* 左半圆角 */
 }
 
 .search-input {
   flex: 1;
-  padding: 10px 8px;
+  height: 40px;
+  padding: 0 8px;
   border: 1px solid #ddd;
   border-left: none;
   border-right: none;
@@ -255,19 +269,23 @@ const handleSearch = () => {
   background: white;
   color: #333;
 }
+
 .search-input::placeholder {
   color: #aaa;
   font-size: 14px;
 }
 
 .search-btn {
-  background: #ffc107;
+  height: 40px;
+  padding: 0 20px;
+  background: #ED6C2D;
   border: none;
-  border-radius: 0 8px 8px 0;
-  padding: 10px 20px;
+  border-radius: 0 20px 20px 0;    /* 右半圆角 */
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  color: white;
+  white-space: nowrap;
 }
 .recommend-header {
   display: flex;

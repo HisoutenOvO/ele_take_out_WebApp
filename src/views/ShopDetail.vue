@@ -588,7 +588,7 @@ const handleScroll = () => {
 .member-box {
   margin: 8px 16px 0;
   padding: 4px 12px;
-  background: #f5d74a;
+  background: rgb(255,227,183);
   border-radius: 6px;
   display: flex;
   align-items: center;

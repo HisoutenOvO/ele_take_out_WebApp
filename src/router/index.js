@@ -25,6 +25,21 @@ const routes = [
         path: '/dish/:id',
         name: 'DishDetail',
         component: () => import('@/views/DishDetail.vue')
+    },
+    {
+        path: '/checkout',
+        name: 'Checkout',
+        component: () => import('@/views/Checkout.vue')
+    },
+    {
+        path: '/payment',
+        name: 'Payment',
+        component: () => import('@/views/Payment.vue')
+    },
+    {
+        path: '/order-result/:id',
+        name: 'OrderResult',
+        component: () => import('@/views/OrderResult.vue')
     }
 ]
 

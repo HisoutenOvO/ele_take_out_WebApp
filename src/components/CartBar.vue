@@ -26,14 +26,13 @@ import { useCartStore } from '@/stores/cart'
 const router = useRouter()
 const cartStore = useCartStore()
 
-defineProps({
+const props = defineProps({
   deliveryFee: { type: Number, default: 0 },
   minPrice: { type: Number, default: 20 }
 })
 
 const handleCheckout = () => {
-  if (cartStore.totalPrice >= minPrice) {
-    // 跳转到结算页（路由后续自己定义）
+  if (cartStore.totalPrice >= props.minPrice) {
     router.push('/checkout')
   }
 }

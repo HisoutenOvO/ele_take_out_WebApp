@@ -34,7 +34,7 @@
       </div>
 
       <!-- 卡片列表 -->
-      <div v-for="shop in shops" :key="shop.id" class="card" @click="goToShop(shop.id)">
+      <div v-for="shop in filteredShops" :key="shop.id" class="card">
         <!-- 左侧图片：直接放emoji，无背景，占1/3 -->
         <img :src="getShopImg(shop.name)" class="card-emoji" alt="emoji" />
         <!-- 右侧详细信息容器 -->
@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref,computed } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -169,6 +169,13 @@ const shops = ref([
     discounts: ['满65减5', '满100减15', '新客立减10']
   }
 ])
+const filteredShops = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  if (!keyword) return shops.value
+  return shops.value.filter(shop =>
+      shop.name.toLowerCase().includes(keyword)
+  )
+})
 
 const getShopImg = (name) => {
   const map = {
@@ -447,7 +454,6 @@ const handleSearch = () => {
   display: flex;
   background: white;
   border-top: 1px solid #eee;
-  padding: 8px 0 12px;
 }
 .bottom div {
   flex: 1;

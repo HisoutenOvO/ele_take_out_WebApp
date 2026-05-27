@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     {
-        path: '/',
+        path: '/index',
         name: 'Home',
         component: () => import('@/views/Home.vue')
     },
@@ -35,6 +35,11 @@ const routes = [
         path: '/payment',
         name: 'Payment',
         component: () => import('@/views/Payment.vue')
+    },
+    {
+        path: '/pay-success',
+        name: 'PaySuccess',
+        component: () => import('@/views/PaySuccess.vue')
     },
     {
         path: '/order-result/:id',

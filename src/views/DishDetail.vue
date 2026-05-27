@@ -134,7 +134,7 @@ const shopInfo = ref({
 })
 
 const quantity = computed(() => {
-  const item = cartStore.items.find(i => i.id === dishInfo.value.id)
+  const item = cartStore.items.find(i => String(i.id) === String(dishInfo.value.id))
   return item ? item.quantity : 0
 })
 

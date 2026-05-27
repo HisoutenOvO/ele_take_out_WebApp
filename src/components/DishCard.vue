@@ -42,7 +42,7 @@ const cartStore = useCartStore()
 const addBtnRef = ref(null)
 
 const quantity = computed(() => {
-  const item = cartStore.items.find(i => i.id === props.dish.id)
+  const item = cartStore.items.find(i => String(i.id) === String(props.dish.id))
   return item ? item.quantity : 0
 })
 

@@ -1,6 +1,6 @@
 <template>
   <div class="bottom-nav">
-    <router-link to="/" class="nav-item" active-class="active" exact>
+    <router-link to="/index" class="nav-item" active-class="active" exact>
       <i class="fa-solid fa-house nav-icon"></i>
       <span class="nav-text">首页</span>
     </router-link>

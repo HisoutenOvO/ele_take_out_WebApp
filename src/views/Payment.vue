@@ -53,7 +53,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-
+import { useCartStore } from '@/stores/cart'
+const cartStore = useCartStore()
 const router = useRouter()
 
 // 支付方式：alipay / wechat
@@ -85,11 +86,11 @@ onUnmounted(() => {
 })
 
 // 模拟数据
-const totalAmount = ref(99.93)
+const totalAmount = computed(() => cartStore.totalPrice)
 const shopName = ref('必胜客之超级强迪')
 
 const handlePay = () => {
-  alert(`使用${payMethod.value === 'alipay' ? '支付宝' : '微信'}支付`)
+  router.push('/pay-success')
 }
 </script>
 

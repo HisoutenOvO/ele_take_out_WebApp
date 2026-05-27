@@ -8,22 +8,25 @@ export const useCartStore = defineStore('cart', () => {
         return items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
     })
 
-    const addItem = (dish) => {
-        const exist = items.value.find(item => item.id === dish.id)
+    // 将 ID 统一转成字符串
+    function addItem(dish) {
+        const dishId = String(dish.id)
+        const exist = items.value.find(item => String(item.id) === dishId)
         if (exist) {
             exist.quantity++
         } else {
-            items.value.push({ ...dish, quantity: 1 })
+            items.value.push({ ...dish, id: dishId, quantity: 1 })
         }
     }
 
-    const removeItem = (id) => {
-        const exist = items.value.find(item => item.id === id)
-        if (exist) {
-            exist.quantity--
-            if (exist.quantity <= 0) {
-                items.value = items.value.filter(item => item.id !== id)
-            }
+    function removeItem(id) {
+        const dishId = String(id)
+        const index = items.value.findIndex(item => String(item.id) === dishId)
+        if (index === -1) return
+        const item = items.value[index]
+        item.quantity--
+        if (item.quantity <= 0) {
+            items.value.splice(index, 1)
         }
     }
 

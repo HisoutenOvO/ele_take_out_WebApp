@@ -33,94 +33,88 @@
       </div>
 
       <div class="section-wrapper">
-      <!-- ========== 第一块内容区域 ========== -->
-      <div class="content-area">
-        <!-- 第一行：请选择收货地址 -->
-        <!-- 第一行：收货地址 -->
-        <div class="address-row" @click="showAddressPopup = true" v-if="!currentAddressId">
-          <span class="address-label">请选择收货地址</span>
-          <span class="address-arrow">›</span>
-        </div>
+        <!-- ========== 第一块内容区域 ========== -->
+        <div class="content-area">
+          <!-- 收货地址 -->
+          <div class="address-row" @click="showAddressPopup = true" v-if="!currentAddressId">
+            <span class="address-label">请选择收货地址</span>
+            <span class="address-arrow">›</span>
+          </div>
 
-        <!-- 选中地址后的卡片 -->
-        <div class="address-card" v-else>
-          <!-- 第一行：标签 + 地址名 + 箭头 -->
-          <div class="address-card-line1">
-            <span class="address-card-tag">{{ selectedAddress.tag }}</span>
-            <span class="address-card-detail">{{ selectedAddress.detail }}</span>
-            <span class="address-card-arrow" @click="showAddressPopup = true">›</span>
-          </div>
-          <!-- 第二行：收货人 + 电话 + 编辑 -->
-          <div class="address-card-line2">
-            <span class="address-card-contact">{{ selectedAddress.name }}（先生）</span>
-            <span class="address-card-phone">{{ selectedAddress.phone }}</span>
-            <span class="address-card-edit" @click.stop="editAddress(selectedAddress.id)">
-              <i class="fas fa-pen"></i>
-            </span>
-          </div>
-          <!-- 第三行：提示 -->
-          <div class="address-card-line3">
-            当前地址长时间未使用，请注意
-          </div>
-        </div>
-
-        <!-- 第二行：是否需要配送入校 -->
-        <div class="school-row">
-          <span class="school-title">需要配送入校</span>
-          <div class="school-options">
-            <div class="option-item" :class="{ active: !campusNeed }" @click="campusNeed = false">
-              <span>否</span>
-              <div class="radio-circle" :class="{ active: !campusNeed }">
-                <i v-if="!campusNeed" class="fas fa-check"></i>
-              </div>
+          <!-- 选中地址后的卡片 -->
+          <div class="address-card" v-else>
+            <div class="address-card-line1">
+              <span class="address-card-tag">{{ selectedAddress.tag }}</span>
+              <span class="address-card-detail">{{ selectedAddress.detail }}</span>
+              <span class="address-card-arrow" @click="showAddressPopup = true">›</span>
             </div>
-            <div class="option-item" :class="{ active: campusNeed }" @click="campusNeed = true">
-              <span>是</span>
-              <div class="radio-circle" :class="{ active: campusNeed }">
-                <i v-if="campusNeed" class="fas fa-check"></i>
+            <div class="address-card-line2">
+              <span class="address-card-contact">{{ selectedAddress.name }}（先生）</span>
+              <span class="address-card-phone">{{ selectedAddress.phone }}</span>
+              <span class="address-card-edit" @click.stop="editAddress(selectedAddress.id)">
+                <i class="fas fa-pen"></i>
+              </span>
+            </div>
+            <div class="address-card-line3">
+              当前地址长时间未使用，请注意
+            </div>
+          </div>
+
+          <!-- 是否需要配送入校 -->
+          <div class="school-row">
+            <span class="school-title">需要配送入校</span>
+            <div class="school-options">
+              <div class="option-item" :class="{ active: !campusNeed }" @click="campusNeed = false">
+                <span>否</span>
+                <div class="radio-circle" :class="{ active: !campusNeed }">
+                  <i v-if="!campusNeed" class="fas fa-check"></i>
+                </div>
+              </div>
+              <div class="option-item" :class="{ active: campusNeed }" @click="campusNeed = true">
+                <span>是</span>
+                <div class="radio-circle" :class="{ active: campusNeed }">
+                  <i v-if="campusNeed" class="fas fa-check"></i>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 第三行：立即送出 / 预约配送 -->
-        <div class="delivery-row">
-          <div class="delivery-card active">
-            <div class="delivery-card-inner">
-              <span class="delivery-title">立即送出</span>
-              <span class="delivery-time">预计{{ estimatedTime }}左右送达</span>
+          <!-- 立即送出 / 预约配送 -->
+          <div class="delivery-row">
+            <div class="delivery-card active">
+              <div class="delivery-card-inner">
+                <span class="delivery-title">立即送出</span>
+                <span class="delivery-time">预计{{ estimatedTime }}左右送达</span>
+              </div>
+            </div>
+            <div class="delivery-card">
+              <div class="delivery-card-inner">
+                <span class="delivery-title">预约配送</span>
+                <span class="delivery-time">选择时间</span>
+              </div>
             </div>
           </div>
-          <div class="delivery-card">
-            <div class="delivery-card-inner">
-              <span class="delivery-title">预约配送</span>
-              <span class="delivery-time">选择时间</span>
-            </div>
+
+          <!-- 超时赔付等 -->
+          <div class="compensate-row">
+            <span class="compensate-title">超1分钟赔</span>
+            <span class="compensate-detail">最高赔8元可叠加红包</span>
+            <span class="compensate-gift">商家赠送</span>
+          </div>
+
+          <!-- 配送提示 -->
+          <div class="notice-row">
+            <span class="notice-tip">因配送订单较多，送达时间可能波动</span>
           </div>
         </div>
 
-        <!-- 第四行：超时赔付 + 红包 + 商家赠送 -->
-        <div class="compensate-row">
-          <span class="compensate-title">超1分钟赔</span>
-          <span class="compensate-detail">最高赔8元可叠加红包</span>
-          <span class="compensate-gift">商家赠送</span>
-        </div>
-
-        <!-- 第五行：配送提示 -->
-        <div class="notice-row">
-          <span class="notice-tip">因配送订单较多，送达时间可能波动</span>
-        </div>
-      </div>
-
-        <!-- ========== 第二块 ========== -->
+        <!-- ========== 第二块：商家信息 + 菜品列表 ========== -->
         <div class="content-area second-block">
-          <!-- 第一部分：商家信息 + 菜品列表 -->
           <div class="shop-info-header">
             <span class="shop-name">{{ shopName }}</span>
             <span class="delivery-tag">蜂鸟准时达</span>
           </div>
 
-          <!-- 菜品列表（v-for） -->
           <div
               v-for="item in cartItems"
               :key="item.id"
@@ -129,85 +123,70 @@
             <img :src="item.image" class="cart-item-img" alt="菜品图" />
             <div class="cart-item-info">
               <span class="cart-item-name">{{ item.name }}</span>
-              <span class="cart-item-count">×{{ item.quantity }}</span>
+              <span class="cart-item-count">×{{ item.number }}</span>
             </div>
             <div class="cart-item-price">
               <span class="price-symbol-small">￥</span>
-              <span class="price-number-small">{{ item.price }}</span>
+              <span class="price-number-small">{{ item.amount }}</span>
             </div>
           </div>
         </div>
 
-        <!-- ========== 第三块：费用明细 ========== -->
-        <div class="content-area third-block">      <!-- ========== 第三块：费用明细 + 合计 ========== -->
-          <div class="content-area third-block">
-            <!-- 打包费 -->
-            <div class="fee-row">
-              <span class="fee-label">打包费</span>
-              <div class="fee-price">
-                <span class="price-symbol-small">￥</span>
-                <span class="price-number-small">{{ packingFee }}</span>
-              </div>
+        <!-- ========== 第三块：费用明细 + 合计 ========== -->
+        <div class="content-area third-block">
+          <div class="fee-row">
+            <span class="fee-label">打包费</span>
+            <div class="fee-price">
+              <span class="price-symbol-small">￥</span>
+              <span class="price-number-small">{{ packingFee }}</span>
             </div>
-
-            <!-- 配送费 -->
-            <div class="fee-row">
-              <span class="fee-label">配送费</span>
-              <div class="fee-price">
-                <span class="price-symbol-small">￥</span>
-                <span class="price-number-small">{{ deliveryFee }}</span>
-              </div>
+          </div>
+          <div class="fee-row">
+            <span class="fee-label">配送费</span>
+            <div class="fee-price">
+              <span class="price-symbol-small">￥</span>
+              <span class="price-number-small">{{ deliveryFee }}</span>
             </div>
-
-            <!-- 店铺活动/券 -->
-            <div class="coupon-row">
-              <span class="coupon-label">店铺活动/券</span>
-              <div class="coupon-right">
-                <span class="coupon-text">一张店铺券可用</span>
-                <span class="coupon-arrow">›</span>
-              </div>
+          </div>
+          <div class="coupon-row">
+            <span class="coupon-label">店铺活动/券</span>
+            <div class="coupon-right">
+              <span class="coupon-text">一张店铺券可用</span>
+              <span class="coupon-arrow">›</span>
             </div>
-
-            <!-- 平台红包 -->
-            <div class="coupon-row">
-          <span class="coupon-label">
-            <span class="red-icon">🧧</span>
-            平台红包
-          </span>
-              <div class="coupon-right">
-                <span class="red-discount">-¥{{ redPacket }}</span>
-                <span class="coupon-arrow">›</span>
-              </div>
+          </div>
+          <div class="coupon-row">
+            <span class="coupon-label">
+              <span class="red-icon">🧧</span>
+              平台红包
+            </span>
+            <div class="coupon-right">
+              <span class="red-discount">-¥{{ redPacket }}</span>
+              <span class="coupon-arrow">›</span>
             </div>
-
-            <!-- 下单反豆 -->
-            <div class="bean-row">
-          <span class="coupon-label">
-            <span class="red-icon">🧧</span>
-            下单反豆
-          </span>
-              <span class="bean-text">返10吃货豆</span>
-            </div>
-
-            <!-- 分隔空白 -->
-            <div class="fee-divider"></div>
-
-            <!-- 合计行（放在同一白色块内） -->
-            <div class="total-row">
-              <span class="total-label">合计</span>
-              <div class="total-right">
-                <span class="total-discount">已优惠</span>
-                <span class="price-symbol-small total-red-symbol">￥</span>
-                <span class="price-number-red">{{ redPacket }}</span>
-                <span class="price-symbol-small total-black-symbol">￥</span>
-                <span class="price-number-big">{{ cartTotal-19 }}</span>
-              </div>
+          </div>
+          <div class="bean-row">
+            <span class="coupon-label">
+              <span class="red-icon">🧧</span>
+              下单反豆
+            </span>
+            <span class="bean-text">返10吃货豆</span>
+          </div>
+          <div class="fee-divider"></div>
+          <div class="total-row">
+            <span class="total-label">合计</span>
+            <div class="total-right">
+              <span class="total-discount">已优惠</span>
+              <span class="price-symbol-small total-red-symbol">￥</span>
+              <span class="price-number-red">{{ redPacket }}</span>
+              <span class="price-symbol-small total-black-symbol">￥</span>
+              <span class="price-number-big">{{ cartTotal }}</span>
             </div>
           </div>
         </div>
-        <!-- ========== 第三块：备注与餐具 ========== -->
+
+        <!-- ========== 备注与餐具 ========== -->
         <div class="content-area remark-block">
-          <!-- 第一行：备注 -->
           <div class="remark-row">
             <span class="remark-label">备注</span>
             <div class="remark-right">
@@ -215,8 +194,6 @@
               <span class="coupon-arrow">›</span>
             </div>
           </div>
-
-          <!-- 第二行：餐具 -->
           <div class="remark-row">
             <span class="remark-label">餐具</span>
             <div class="remark-right">
@@ -224,8 +201,6 @@
               <span class="coupon-arrow">›</span>
             </div>
           </div>
-
-          <!-- 第三行：开票 -->
           <div class="remark-row">
             <span class="remark-label">开票</span>
             <div class="remark-right">
@@ -234,36 +209,28 @@
             </div>
           </div>
         </div>
-        <!-- ========== 第四块：号码保护与安心权益 ========== -->
+
+        <!-- ========== 号码保护与安心权益 ========== -->
         <div class="content-area safety-block">
-          <!-- 第一部分：号码保护 -->
           <div class="safety-section">
             <div class="safety-row">
               <div class="safety-left">
-                <span class="safety-icon">
-                  <i class="fas fa-shield-halved"></i>
-                </span>
+                <span class="safety-icon"><i class="fas fa-shield-halved"></i></span>
                 <span class="safety-title">号码保护</span>
               </div>
               <div class="safety-right">
                 <span class="safety-status">加密保护中</span>
-                <span class="radio-circle active">
-                <i class="fas fa-check"></i>
-              </span>
+                <span class="radio-circle active"><i class="fas fa-check"></i></span>
               </div>
             </div>
             <div class="safety-desc">
               为了您的隐私安全，已对商家、骑士隐藏您的真实手机号；为保障服务质量，开启号码保护的订单通话可能会被录音
             </div>
           </div>
-
-          <!-- 第二部分：安心权益 -->
           <div class="safety-section">
             <div class="safety-row">
               <div class="safety-left">
-                <span class="safety-icon">
-                  <i class="fas fa-shield-halved"></i>
-                </span>
+                <span class="safety-icon"><i class="fas fa-shield-halved"></i></span>
                 <span class="safety-title">安心权益</span>
               </div>
               <div class="safety-right">
@@ -273,30 +240,34 @@
             </div>
           </div>
         </div>
+      </div>
     </div>
-</div>
+
     <!-- ========== 底部固定区域 ========== -->
     <div class="bottom-bar">
       <div class="bottom-inner">
-        <!-- 左侧价格信息：两行 -->
         <div class="price-info">
-          <!-- 第一行：合计 + ￥ + 金额 -->
           <div class="price-line1">
             <span class="total-text">合计</span>
             <span class="total-symbol">￥</span>
-            <span class="total-amount">{{ cartTotal-19 }}</span>
+            <span class="total-amount">{{ cartTotal }}</span>
           </div>
-          <!-- 第二行：已优惠 + ￥ + 优惠金额 -->
           <div class="price-line2">
             <span class="discount-text">已优惠</span>
             <span class="discount-symbol">￥</span>
             <span class="discount-amount">{{ totalDiscount }}</span>
           </div>
         </div>
-        <!-- 右侧按钮 -->
-        <button class="submit-btn" @click="handleSubmit">立即支付</button>
+        <button
+            class="submit-btn"
+            :class="{ active: cartTotal >= minPrice }"
+            @click="handleSubmit"
+        >
+          立即支付
+        </button>
       </div>
     </div>
+
     <!-- ========== 地址选择弹出层 ========== -->
     <div
         class="address-overlay"
@@ -309,43 +280,32 @@
           <span class="address-popup-close" @click="showAddressPopup = false">✕</span>
         </div>
         <div class="address-popup-content">
-          <!-- 地址列表待开发，先占位 -->
-          <div class="address-popup-content">
-            <!-- 地址列表（v-for） -->
-            <div
-                v-for="addr in addressList"
-                :key="addr.id"
-                class="address-item"
-                @click="selectAddress(addr.id)"
-            >
-              <!-- 左侧选中圆圈 -->
-              <div class="address-radio">
-                <div
-                    class="radio-circle"
-                    :class="{ active: currentAddressId === addr.id }"
-                >
-                  <i v-if="currentAddressId === addr.id" class="fas fa-check"></i>
-                </div>
+          <div
+              v-for="addr in addressList"
+              :key="addr.id"
+              class="address-item"
+              @click="selectAddress(addr.id)"
+          >
+            <div class="address-radio">
+              <div
+                  class="radio-circle"
+                  :class="{ active: currentAddressId === addr.id }"
+              >
+                <i v-if="currentAddressId === addr.id" class="fas fa-check"></i>
               </div>
-
-              <!-- 中间信息区 -->
-              <div class="address-info">
-                <!-- 第一行：标签 + 详细地址 -->
-                <div class="address-line1">
-                  <span class="address-tag">{{ addr.tag }}</span>
-                  <span class="address-detail">{{ addr.detail }}</span>
-                </div>
-                <!-- 第二行：收件人 + 电话 -->
-                <div class="address-line2">
-                  <span class="address-contact">{{ addr.name }}</span>
-                  <span class="address-phone">{{ addr.phone }}</span>
-                </div>
+            </div>
+            <div class="address-info">
+              <div class="address-line1">
+                <span class="address-tag">{{ addr.tag }}</span>
+                <span class="address-detail">{{ addr.detail }}</span>
               </div>
-
-              <!-- 右侧编辑图标 -->
-              <div class="address-edit" @click.stop="editAddress(addr.id)">
-                <i class="fas fa-pen"></i>
+              <div class="address-line2">
+                <span class="address-contact">{{ addr.name }}</span>
+                <span class="address-phone">{{ addr.phone }}</span>
               </div>
+            </div>
+            <div class="address-edit" @click.stop="editAddress(addr.id)">
+              <i class="fas fa-pen"></i>
             </div>
           </div>
         </div>
@@ -354,124 +314,96 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import router from "@/router/index.js";
+<script setup>import { ref, computed, onMounted, onUnmounted } from 'vue'
+import router from "@/router/index.js"
 import { GetAddressList } from '@/api/address'
-import {ElMessage} from "element-plus";
-import { useCartStore } from '@/stores/cart'
+import { ElMessage } from "element-plus"
 import { GetShopDetail } from '@/api/shop'
 import { GetCartList } from '@/api/cart'
 
-
-
-const shopId = ref(null)
-
-const getShopInfo = async() => {
-  const result = await GetShopDetail(shopId.value)
-  if(result.code === 200){
-    shopName.value = result.data.name
-    deliveryFee.value = result.data.deliveryFee
-  }
-}
-
-// 地址弹出层显示状态
-const showAddressPopup = ref(false)
-const cartStore = useCartStore()
-const cartTotal = computed(() => cartStore.totalPrice)
-// 优惠金额（根据实际情况计算，这里先用红包金额占位）
-const totalDiscount = computed(() => redPacket.value)
-const noticeList = ref([
-  '适量点餐，环保健康',
-  '远距离配送，配送费原价上调',
-  '欢迎光临，祝您用餐愉快'
-])
-
-const currentNotice = ref(0)
-let noticeTimer = null
-
-// 模拟数据（后期从购物车 Store 取）
-const shopName = ref('必胜客之超级强迪')
-
-const cartItems = ref([
-  { id: 1, name: '超级至尊披萨超级至尊披萨超级至尊披萨超级至尊披萨', quantity: 1, price: 128, image: '/img/sp02.png' },
-  { id: 2, name: '巨无霸套餐', quantity: 2, price: 42, image: '/img/sp06.png' },
-  { id: 3, name: '香辣鸡腿堡', quantity: 1, price: 35, image: '/img/sp07.png' }
-])
-
-const packingFee = ref(1)
-const deliveryFee = ref(3)
+// ========== 数据 ==========
+const shopName = ref('')
+const deliveryFee = ref(0)
+const minPrice = ref(0)
+const cartItems = ref([])            // 购物车列表
+const cartTotal = ref(0)             // 购物车总价
+const packingFee = ref(1)            // 打包费写死，后期可改
 const redPacket = ref(19)
+const totalDiscount = ref(19)
 const campusNeed = ref(true)
+const shopId = localStorage.getItem('currentShopId')
 
-const estimatedTime = computed(() => {
-  const now = new Date()
-  const addMinutes = 30 + Math.floor(Math.random() * 11)
-  now.setMinutes(now.getMinutes() + addMinutes)
-  const h = now.getHours().toString().padStart(2, '0')
-  const m = now.getMinutes().toString().padStart(2, '0')
-  return `${h}:${m}`
-})
+// ========== 加载所有数据 ==========
+const loadData = async () => {
 
-const scrollAreaRef = ref(null)
-const handleScroll = () => {}
-
-const handleSubmit = () => {
-  router.push('/payment')
-}
-
-const getAddress = async() => {
-  const result = await GetAddressList()
-  if(result.code === 200){
-    addressList.value = result.data
-  }else{
-    ElMessage.error(result.msg)
+  // 1. 获取购物车（后端根据 token 自动识别用户）
+  const cartResult = await GetCartList(shopId)
+  if (cartResult.code !== 200 || !cartResult.data || cartResult.data.length === 0) {
+    ElMessage.warning('购物车为空，请先添加商品')
+    router.push('/')
+    return
   }
+
+
+  // 2. 从购物车第一条数据中取出 shopId
+  console.log('提取到的 shopId:', shopId)     // 这时打印才是正确的
+
+  // 3. 用 shopId 获取商家信息
+  const shopResult = await GetShopDetail(shopId)   // 直接传变量，不用 .value
+  if (shopResult.code === 200) {
+    shopName.value = shopResult.data.name
+    deliveryFee.value = shopResult.data.deliveryFee
+    minPrice.value = shopResult.data.minPrice
+  }
+  cartItems.value = cartResult.data
+  cartTotal.value = cartResult.data.reduce((sum, item) => sum + item.amount * item.number, 0) - 19 + packingFee.value + deliveryFee.value
 }
 
-// 地址列表数据
+// ========== 地址 ==========
+const showAddressPopup = ref(false)
 const addressList = ref([])
+const currentAddressId = ref(null)
 
-// 当前选中的地址 ID
-const currentAddressId = ref()
-
-// 选择地址
-// 当前显示的地址文本
-const displayAddress = ref('请选择收货地址')
-
-// 选择地址
-const selectAddress = (id) => {
-  currentAddressId.value = id
-  const addr = addressList.value.find(a => a.id === id)
-  if (addr) {
-    displayAddress.value = `${addr.tag} ${addr.detail}`
+const getAddress = async () => {
+  const result = await GetAddressList()
+  if (result.code === 200) {
+    addressList.value = result.data
   }
-  showAddressPopup.value = false
 }
-// 当前选中的完整地址对象
+
 const selectedAddress = computed(() => {
   if (!currentAddressId.value) return null
   return addressList.value.find(a => a.id === currentAddressId.value) || null
 })
 
-// 编辑地址
-const editAddress = (id) => {
-  console.log('编辑地址:', id)
-  // 后期跳转编辑页或弹出编辑框
+const selectAddress = (id) => {
+  currentAddressId.value = id
+  showAddressPopup.value = false
 }
+const editAddress = (id) => console.log('编辑地址:', id)
 
-onMounted(async() => {
+// ========== 其他 ==========
+const estimatedTime = computed(() => {
+  const now = new Date()
+  now.setMinutes(now.getMinutes() + 30 + Math.floor(Math.random() * 11))
+  return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+})
+
+const noticeList = ref(['适量点餐，环保健康', '远距离配送，配送费原价上调', '欢迎光临，祝您用餐愉快'])
+const currentNotice = ref(0)
+let noticeTimer = null
+
+const handleSubmit = () => router.push('/payment')
+
+onMounted(async () => {
+  await loadData()
+  await getAddress()
   noticeTimer = setInterval(() => {
     currentNotice.value = (currentNotice.value + 1) % noticeList.value.length
   }, 3000)
-
- await getAddress();
- await getShopInfo();
 })
 
-onUnmounted(() => {
-  clearInterval(noticeTimer)
-})
+onUnmounted(() => clearInterval(noticeTimer))
 </script>
 
 <style scoped>

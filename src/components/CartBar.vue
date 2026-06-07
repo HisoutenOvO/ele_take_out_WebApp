@@ -52,6 +52,8 @@ const loadCart = async () => {
 
 const handleCheckout = () => {
   if (totalPrice.value >= props.minPrice) {
+    console.log('CartBar 收到的 shopId:', props.shopId)
+    localStorage.setItem('currentShopId', props.shopId) // 存储 shopId
     router.push('/checkout')
   }
 }

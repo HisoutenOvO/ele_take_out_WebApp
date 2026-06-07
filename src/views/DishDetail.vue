@@ -107,39 +107,62 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import {ref, computed, onMounted} from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import CartBar from '@/components/CartBar.vue'
+import { GetDishById } from '@/api/dish'
+import { GetShopDetail } from '@/api/shop'
+import {ElMessage} from "element-plus";// 引入 cartStore
+import { cartStore } from '@/stores/cartStore'
+import {AddCart, DeleteCart} from "@/api/cart.js";
+
+// 数量直接从 Store 中获取
+const quantity = computed(() => cartStore.getQuantity(dishInfo.value.id))
+
+// 加购操作，操作后刷新 Store
+const handleAddToCart = async () => {
+  await AddCart({ dishId: dishInfo.value.id, shopId: dishInfo.value.shopId || shopId.value })
+  await cartStore.load(dishInfo.value.shopId || shopId.value)
+}
+
+// 减购操作，操作后刷新 Store
+// 减购操作
+const handleMinus = async () => {
+  await DeleteCart({ dishId: dishInfo.value.id, shopId: dishInfo.value.shopId || shopId.value })
+  await cartStore.load(dishInfo.value.shopId || shopId.value)
+}
 
 const route = useRoute()
 const dishId = route.params.id
-const cartStore = useCartStore()
+const shopId = ref(1)
+const dishInfo = ref({})
 
-// 模拟菜品数据（后期根据 dishId 请求 API）
-const dishInfo = ref({
-  id: dishId,
-  name: '超级至尊披萨超级至尊披萨超级至尊披萨',
-  price: 128.0,
-  monthlySales: 500,
-  image: '/img/sp02.png',
-  description: '芝士浓郁，饼底松软，搭配多种新鲜蔬菜和优质肉类，口感丰富，让人回味无穷。',
-  ingredients: '小麦粉、芝士、番茄酱、香肠、青椒、洋葱、橄榄',
-  serving: '约500g/份'
-})
+
+const search = async() => {
+  const result = await GetDishById(dishId)
+  if(result.code === 200){
+    dishInfo.value = result.data
+    shopId.value = result.data.shopId
+  }else{
+    ElMessage.error(result.msg)
+  }
+}
+
+const GetShopInfo = async() => {
+  const result = await GetShopDetail(shopId.value)
+  if(result.code === 200){
+    shopInfo.value.deliveryFee = result.data.deliveryFee
+    shopInfo.value.minPrice = result.data.minPrice
+  }
+}
 
 const shopInfo = ref({
   deliveryFee: 5,
   minPrice: 88
 })
 
-const quantity = computed(() => {
-  const item = cartStore.items.find(i => String(i.id) === String(dishInfo.value.id))
-  return item ? item.quantity : 0
-})
 
-const handleAddToCart = () => cartStore.addItem(dishInfo.value)
-const handleMinus = () => cartStore.removeItem(dishInfo.value.id)
 
 // 返回按钮动画
 const scrollAreaRef = ref(null)
@@ -160,6 +183,11 @@ const handleScroll = () => {
     scrollTop.value = scrollAreaRef.value.scrollTop
   }
 }
+
+onMounted(async()=>{
+  await search();
+  await GetShopInfo();
+})
 </script>
 
 <style scoped>

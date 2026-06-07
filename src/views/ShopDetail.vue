@@ -160,6 +160,9 @@
                   v-for="dish in dishesByCategory[cat.id]"
                   :key="dish.id"
                   :dish="dish"
+                  :shopId="shopId"
+                  :quantity="cartStore.getQuantity(dish.id)"
+                  @cart-changed="loadCart"
               />
             </template>
           </div>
@@ -169,6 +172,7 @@
 
     <!-- 底部购物车栏 -->
     <CartBar
+        :shopId="shopId"
         :deliveryFee="shopInfo.deliveryFee"
         :minPrice="shopInfo.minPrice"
     />
@@ -182,7 +186,10 @@ import CartBar from '@/components/CartBar.vue'
 import DishCard from "@/components/DishCard.vue"
 import { GetShopDetail,GetShopCategory } from '@/api/shop'
 import { GetCategoryDishes } from '@/api/category'
+import {AddCart,DeleteCart,GetCartList} from '@/api/cart'
 import {ElMessage} from "element-plus";
+import { cartStore } from '@/stores/cartStore'
+
 
 const tabBarRef = ref(null)
 const tabBarFixed = ref(false)
@@ -194,7 +201,7 @@ const scrollTop = ref(0)
 const transitionEnd = 150
 const isManualJump = ref(false)   // 防止手动跳转时触发联动
 const route = useRoute()
-const shopId = route.params.id
+const shopId = Number(route.params.id)
 const discounts = ref(['满65减5', '满100减15', '满139减25', '新客立减10'])
 
 
@@ -211,6 +218,41 @@ const currentCategoryId = ref(1)
 const shopInfo = ref({})
 
 
+// 购物车列表（本地维护，用于判断减号显示和数量）
+
+
+// 页面加载时获取购物车数据
+const loadCart = () => cartStore.load(shopId)
+
+// 获取某个菜品在购物车里的数量
+const getCartNumber = (dishId) => cartStore.getQuantity(dishId)
+
+// 加
+const handleAddToCart = async (dish) => {
+  await AddCart({
+    shopId: dish.shopId,
+    dishId: dish.id
+  })
+  await loadCart()  // 重新获取购物车数据，更新数量和总价
+}
+
+// 减
+const handleRemoveFromCart = async (dish) => {
+  const cartItem = cartItems.value.find(i => i.dish_id === dish.id)
+  if (!cartItem) return
+  await DeleteCart({
+    shopId: dish.shopId,
+    dishId:cartItem.id})
+  await loadCart()
+}
+
+
+onMounted(async () => {
+  await search()
+  await getCategories()
+  await loadAllDishes()
+  await loadCart()
+})
 
 const search = async() => {
   const result = await GetShopDetail(shopId)
@@ -331,7 +373,7 @@ const updateActiveCategoryForFixed = () => {
     currentCategoryId.value = activeId
   }
 }
-
+const getCartQuantity = (dishId) => cartStore.getQuantity(dishId)
 const handleDishScroll = () => {
   if (!isManualJump.value) {
     updateActiveCategoryForFixed()
@@ -362,6 +404,7 @@ onMounted(async()=>{
  await search();
  await getCategories();
  await loadAllDishes();
+ await loadCart();
 })
 </script>
 
@@ -537,12 +580,34 @@ onMounted(async()=>{
 .rating-value { color: #e59400; }
 .col-divider { width: 1px; height: 28px; background: #e0e0e0; flex-shrink: 0; align-self: center; }
 
+/* 公告栏容器：保持 padding，确保左右有间隙 */
 .notice-bar {
-  margin-top: 8px; padding: 0 16px; height: 14px; display: flex; align-items: center; overflow: hidden;
+  margin-top: 8px;
+  padding: 0 16px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
 }
-.notice-scroll { display: flex; white-space: nowrap; animation: scroll-left 8s linear infinite; width: max-content; }
-.notice-text { font-size: 11px; color: #999; line-height: 14px; flex-shrink: 0; }
-.spacer { color: transparent; }
+
+/* 滚动容器：取消 flex 和 max-content，让文字从右侧开始滚动 */
+.notice-scroll {
+  display: flex;
+  white-space: nowrap;
+  animation: scroll-left 8s linear infinite;
+  width: max-content;
+}
+
+.notice-text {
+  font-size: 11px;
+  color: #999;
+  line-height: 14px;
+  flex-shrink: 0;
+}
+
+.spacer {
+  color: transparent;
+}
 
 @keyframes scroll-left {
   0% { transform: translateX(0); }

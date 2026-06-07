@@ -14,7 +14,7 @@
             <i class="fas fa-minus"></i>
           </div>
           <span class="quantity" v-if="quantity > 0">{{ quantity }}</span>
-          <div class="add-btn" ref="addBtnRef" @click.stop="handleAddClick">
+          <div class="add-btn" @click.stop="handleAddClick">
             <i class="fas fa-plus"></i>
           </div>
         </div>
@@ -24,115 +24,37 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useCartStore } from '@/stores/cart'
 import { useRouter } from 'vue-router'
+import { AddCart, DeleteCart } from '@/api/cart'
 
-// 在 props 定义之后添加
 const router = useRouter()
 
-const goToDishDetail = () => {
-  router.push(`/dish/${props.dish.id}`)
-}
 const props = defineProps({
-  dish: { type: Object, required: true }
+  dish: { type: Object, required: true },
+  shopId: { type: Number, required: true },
+  quantity: { type: Number, default: 0 }
 })
 
-const cartStore = useCartStore()
-const addBtnRef = ref(null)
+const emit = defineEmits(['cart-changed'])
 
-const quantity = computed(() => {
-  const item = cartStore.items.find(i => String(i.id) === String(props.dish.id))
-  return item ? item.quantity : 0
-})
-
-// 获取购物车图标中心位置
-const getCartIconPos = () => {
-  const target = document.getElementById('cart-icon-target')
-  if (!target) {
-    return { x: window.innerWidth / 2, y: window.innerHeight - 40 }
-  }
-  const rect = target.getBoundingClientRect()
-  return {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2
-  }
+const handleAddClick = async () => {
+  await AddCart({ dishId: props.dish.id, shopId: props.shopId })
+  emit('cart-changed')
 }
 
-const handleAddClick = () => {
-  const btn = addBtnRef.value
-  if (!btn) {
-    cartStore.addItem(props.dish)
-    return
-  }
-
-  // 创建飞行动画元素
-  const flyEl = document.createElement('div')
-  // 设置基本样式
-  flyEl.style.cssText = `
-    position: fixed;
-    z-index: 9999;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ff6200;
-    color: #fff;
-    border-radius: 50%;
-    font-size: 14px;
-    pointer-events: none;
-    left: 0;
-    top: 0;
-    transition: none;
-  `
-  flyEl.innerHTML = '<i class="fas fa-plus"></i>'
-  document.body.appendChild(flyEl)
-
-  const btnRect = btn.getBoundingClientRect()
-  const startX = btnRect.left + btnRect.width / 2 - 12
-  const startY = btnRect.top + btnRect.height / 2 - 12
-
-  const endPos = getCartIconPos()
-  const endX = endPos.x - 12
-  const endY = endPos.y - 12
-
-  // 抛物线中间点：向左上方偏移
-  const midX = startX - 60
-  const midY = startY - 40
-
-  // 使用 Web Animations API 创建平滑抛物线
-  const keyframes = [
-    { left: startX + 'px', top: startY + 'px', transform: 'scale(1)', opacity: 1 },
-    { left: midX + 'px', top: midY + 'px', transform: 'scale(0.8)', opacity: 1 },
-    { left: endX + 'px', top: endY + 'px', transform: 'scale(0.3)', opacity: 0.5 }
-  ]
-
-  const animation = flyEl.animate(keyframes, {
-    duration: 600,
-    easing: 'ease-out',
-    fill: 'forwards'
-  })
-
-  animation.onfinish = () => {
-    flyEl.remove()
-    cartStore.addItem(props.dish)
-  }
+const handleMinus = async () => {
+  await DeleteCart({
+    shopId: Number(props.shopId),
+    dishId: props.dish.id})
+  console.log('减号点击，dishId:', props.dish.id)
+  emit('cart-changed')
 }
 
-const handleMinus = () => cartStore.removeItem(props.dish.id)
+const goToDishDetail = () => router.push(`/dish/${props.dish.id}`)
 </script>
 
 <style scoped>
-.dish-card {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 12px 10px;
-  width: 100%;
-  background: #fff;
-  box-sizing: border-box;
-}
+.dish-card { display: flex; align-items: center; gap: 13px; padding: 12px 10px; width: 100%; background: #fff; box-sizing: border-box; }
 .dish-img-area { width: 110px; height: 110px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .dish-img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
 .dish-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; }

@@ -52,7 +52,7 @@
           </div>
           <!-- 第二行：收货人 + 电话 + 编辑 -->
           <div class="address-card-line2">
-            <span class="address-card-contact">{{ selectedAddress.contact }}（先生）</span>
+            <span class="address-card-contact">{{ selectedAddress.name }}（先生）</span>
             <span class="address-card-phone">{{ selectedAddress.phone }}</span>
             <span class="address-card-edit" @click.stop="editAddress(selectedAddress.id)">
               <i class="fas fa-pen"></i>
@@ -200,7 +200,7 @@
                 <span class="price-symbol-small total-red-symbol">￥</span>
                 <span class="price-number-red">{{ redPacket }}</span>
                 <span class="price-symbol-small total-black-symbol">￥</span>
-                <span class="price-number-big">{{ cartTotal }}</span>
+                <span class="price-number-big">{{ cartTotal-19 }}</span>
               </div>
             </div>
           </div>
@@ -284,7 +284,7 @@
           <div class="price-line1">
             <span class="total-text">合计</span>
             <span class="total-symbol">￥</span>
-            <span class="total-amount">{{ cartTotal }}</span>
+            <span class="total-amount">{{ cartTotal-19 }}</span>
           </div>
           <!-- 第二行：已优惠 + ￥ + 优惠金额 -->
           <div class="price-line2">
@@ -337,7 +337,7 @@
                 </div>
                 <!-- 第二行：收件人 + 电话 -->
                 <div class="address-line2">
-                  <span class="address-contact">{{ addr.contact }}</span>
+                  <span class="address-contact">{{ addr.name }}</span>
                   <span class="address-phone">{{ addr.phone }}</span>
                 </div>
               </div>
@@ -356,8 +356,25 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useCartStore } from '@/stores/cart'
 import router from "@/router/index.js";
+import { GetAddressList } from '@/api/address'
+import {ElMessage} from "element-plus";
+import { useCartStore } from '@/stores/cart'
+import { GetShopDetail } from '@/api/shop'
+import { GetCartList } from '@/api/cart'
+
+
+
+const shopId = ref(null)
+
+const getShopInfo = async() => {
+  const result = await GetShopDetail(shopId.value)
+  if(result.code === 200){
+    shopName.value = result.data.name
+    deliveryFee.value = result.data.deliveryFee
+  }
+}
+
 // 地址弹出层显示状态
 const showAddressPopup = ref(false)
 const cartStore = useCartStore()
@@ -373,15 +390,6 @@ const noticeList = ref([
 const currentNotice = ref(0)
 let noticeTimer = null
 
-onMounted(() => {
-  noticeTimer = setInterval(() => {
-    currentNotice.value = (currentNotice.value + 1) % noticeList.value.length
-  }, 3000)
-})
-
-onUnmounted(() => {
-  clearInterval(noticeTimer)
-})
 // 模拟数据（后期从购物车 Store 取）
 const shopName = ref('必胜客之超级强迪')
 
@@ -411,30 +419,18 @@ const handleScroll = () => {}
 const handleSubmit = () => {
   router.push('/payment')
 }
-// 地址列表数据
-const addressList = ref([
-  {
-    id: 1,
-    tag: '学校',
-    detail: '梦想小镇创业大街1号楼101室',
-    contact: '张三',
-    phone: '138****1234'
-  },
-  {
-    id: 2,
-    tag: '家',
-    detail: '余杭区文一西路969号',
-    contact: '张三',
-    phone: '138****1234'
-  },
-  {
-    id: 3,
-    tag: '公司',
-    detail: '西湖区西溪路556号',
-    contact: '张三',
-    phone: '138****1234'
+
+const getAddress = async() => {
+  const result = await GetAddressList()
+  if(result.code === 200){
+    addressList.value = result.data
+  }else{
+    ElMessage.error(result.msg)
   }
-])
+}
+
+// 地址列表数据
+const addressList = ref([])
 
 // 当前选中的地址 ID
 const currentAddressId = ref()
@@ -463,6 +459,19 @@ const editAddress = (id) => {
   console.log('编辑地址:', id)
   // 后期跳转编辑页或弹出编辑框
 }
+
+onMounted(async() => {
+  noticeTimer = setInterval(() => {
+    currentNotice.value = (currentNotice.value + 1) % noticeList.value.length
+  }, 3000)
+
+ await getAddress();
+ await getShopInfo();
+})
+
+onUnmounted(() => {
+  clearInterval(noticeTimer)
+})
 </script>
 
 <style scoped>

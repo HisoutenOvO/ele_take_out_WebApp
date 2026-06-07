@@ -94,7 +94,7 @@
 import {ref, computed, onMounted} from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
 import { useRouter } from 'vue-router'
-import { GetShopList } from '@/api/shop'
+import { GetShopList} from '@/api/shop'
 import {ElMessage} from "element-plus";
 const router = useRouter()
 
@@ -111,7 +111,6 @@ const search = async() => {
     ElMessage.error(result.msg || "请求出错")
   }
 }
-
 
 const shops = ref([])
 const discounts = ref(['满65减5', '满100减15', '新客立减10'])

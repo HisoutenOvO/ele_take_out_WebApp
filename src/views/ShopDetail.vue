@@ -180,7 +180,8 @@ import {computed, onMounted, ref} from 'vue'
 import { useRoute } from 'vue-router'
 import CartBar from '@/components/CartBar.vue'
 import DishCard from "@/components/DishCard.vue"
-import { GetShopDetail } from '@/api/shop'
+import { GetShopDetail,GetShopCategory } from '@/api/shop'
+import { GetCategoryDishes } from '@/api/category'
 import {ElMessage} from "element-plus";
 
 const tabBarRef = ref(null)
@@ -196,79 +197,12 @@ const route = useRoute()
 const shopId = route.params.id
 const discounts = ref(['满65减5', '满100减15', '满139减25', '新客立减10'])
 
-// ---------- 分类数据 ----------
-const categories = ref([
-  { id: 1, name: '人气推荐', emoji: '🔥' },
-  { id: 2, name: '汉堡', emoji: '🍔' },
-  { id: 3, name: '小食', emoji: '🍟' },
-  { id: 4, name: '饮品', emoji: '🥤' },
-  { id: 5, name: '甜品', emoji: '🍰' },
-  { id: 6, name: '炸鸡', emoji: '🍗' },
-  { id: 7, name: '面条', emoji: '🍜' },
-  { id: 8, name: '寿司', emoji: '🍣' },
-  { id: 9, name: '沙拉', emoji: '🥗' },
-  { id: 10, name: '小吃', emoji: '🍢' },
-  { id: 11, name: '冰淇淋', emoji: '🍦' },
-])
 
-// ---------- 菜品数据（按分类组织） ----------
-const dishesByCategory = ref({
-  1: [
-    { id: 101, name: '超级至尊披萨', description: '芝士、香肠、青椒、洋葱', monthlySales: 500, price: 128, image: '/img/sp02.png' },
-    { id: 102, name: '巨无霸套餐', description: '巨无霸 + 可乐 + 薯条', monthlySales: 800, price: 42, image: '/img/sp06.png' },
-    { id: 103, name: '招牌牛肉饭', description: '肥牛、洋葱、温泉蛋', monthlySales: 320, price: 38, image: '/img/sp05.png' },
-  ],
-  2: [
-    { id: 201, name: '经典牛肉堡', description: '安格斯牛肉饼、生菜、芝士', monthlySales: 600, price: 35, image: '/img/sp07.png' },
-    { id: 202, name: '双层吉士汉堡', description: '双层牛肉、芝士、酸黄瓜', monthlySales: 750, price: 29, image: '/img/sp08.png' },
-    { id: 203, name: '香辣鸡腿堡', description: '鸡腿肉、生菜、香辣酱', monthlySales: 420, price: 22, image: '/img/sp09.png' },
-    { id: 204, name: '鳕鱼堡', description: '鳕鱼排、塔塔酱', monthlySales: 280, price: 26, image: '/img/sp04.png' },
-  ],
-  3: [
-    { id: 301, name: '黄金鸡块', description: '外酥里嫩，搭配甜辣酱', monthlySales: 900, price: 18, image: '/img/sp06.png' },
-    { id: 302, name: '美式薯条', description: '粗薯条，海盐调味', monthlySales: 1100, price: 15, image: '/img/sp07.png' },
-    { id: 303, name: '洋葱圈', description: '酥脆洋葱圈，番茄酱', monthlySales: 670, price: 14, image: '/img/sp08.png' },
-  ],
-  4: [
-    { id: 401, name: '冰美式', description: '意式浓缩+冰水', monthlySales: 850, price: 18, image: '/img/sp09.png' },
-    { id: 402, name: '柠檬茶', description: '鲜切柠檬，清凉解腻', monthlySales: 720, price: 16, image: '/img/sp02.png' },
-    { id: 403, name: '草莓奶昔', description: '新鲜草莓+冰淇淋', monthlySales: 540, price: 24, image: '/img/sp05.png' },
-    { id: 404, name: '可乐', description: '冰镇可口可乐', monthlySales: 1200, price: 10, image: '/img/sp04.png' },
-  ],
-  5: [
-    { id: 501, name: '巧克力熔岩', description: '爆浆巧克力，香草冰淇淋', monthlySales: 380, price: 32, image: '/img/sp06.png' },
-    { id: 502, name: '焦糖布丁', description: '香滑布丁，焦糖酱', monthlySales: 450, price: 22, image: '/img/sp07.png' },
-  ],
-  6: [
-    { id: 601, name: '韩式炸鸡', description: '甜辣酱，外酥里嫩', monthlySales: 880, price: 38, image: '/img/sp08.png' },
-    { id: 602, name: '原味炸鸡', description: '薄脆外皮，鲜嫩多汁', monthlySales: 760, price: 36, image: '/img/sp09.png' },
-    { id: 603, name: '鸡米花', description: '一口一个，蜂蜜芥末酱', monthlySales: 540, price: 20, image: '/img/sp02.png' },
-  ],
-  7: [
-    { id: 701, name: '番茄肉酱面', description: '手工意面，浓郁肉酱', monthlySales: 410, price: 28, image: '/img/sp05.png' },
-    { id: 702, name: '日式拉面', description: '豚骨汤底，溏心蛋', monthlySales: 370, price: 35, image: '/img/sp04.png' },
-  ],
-  8: [
-    { id: 801, name: '三文鱼寿司', description: '新鲜三文鱼，芥末酱油', monthlySales: 320, price: 22, image: '/img/sp06.png' },
-    { id: 802, name: '鳗鱼寿司', description: '蒲烧鳗鱼，照烧汁', monthlySales: 290, price: 25, image: '/img/sp07.png' },
-  ],
-  9: [
-    { id: 901, name: '凯撒沙拉', description: '罗马生菜、培根、帕玛森', monthlySales: 250, price: 24, image: '/img/sp08.png' },
-    { id: 902, name: '田园沙拉', description: '混合生菜、圣女果、玉米', monthlySales: 200, price: 20, image: '/img/sp09.png' },
-  ],
-  10: [
-    { id: 1001, name: '烤翅', description: '奥尔良风味烤翅', monthlySales: 650, price: 16, image: '/img/sp02.png' },
-    { id: 1002, name: '玉米浓汤', description: '香甜浓郁，黄油面包', monthlySales: 310, price: 12, image: '/img/sp05.png' },
-  ],
-  11: [
-    { id: 1101, name: '香草冰淇淋', description: '马达加斯加香草', monthlySales: 480, price: 15, image: '/img/sp04.png' },
-    { id: 1102, name: '抹茶冰淇淋', description: '宇治抹茶，微苦回甘', monthlySales: 420, price: 18, image: '/img/sp06.png' },
-    { id: 1103, name: '抹茶冰淇淋', description: '宇治抹茶，微苦回甘', monthlySales: 420, price: 18, image: '/img/sp06.png' },
-    { id: 1104, name: '抹茶冰淇淋', description: '宇治抹茶，微苦回甘', monthlySales: 420, price: 18, image: '/img/sp06.png' },
-    { id: 1105, name: '抹茶冰淇淋', description: '宇治抹茶，微苦回甘', monthlySales: 420, price: 18, image: '/img/sp06.png' },
-    { id: 1106, name: '抹茶冰淇淋', description: '宇治抹茶，微苦回甘', monthlySales: 420, price: 18, image: '/img/sp06.png' },
-  ]
-})
+const categories = ref([])
+
+const dishes = ref([])
+const dishesByCategory = ref({})
+
 
 
 const currentCategoryId = ref(1)
@@ -283,10 +217,29 @@ const search = async() => {
   if(result.code === 200){
     shopInfo.value = result.data
   }else{
-    ElMessage.error(result.msg || "请求错误")
+    ElMessage.error(result.msg)
   }
 }
 
+const getCategories = async() => {
+  const result = await GetShopCategory(shopId)
+  if(result.code === 200){
+    categories.value = result.data
+  }else{
+    ElMessage.error(result.msg)
+  }
+}
+
+const loadAllDishes = async () => {
+  for (const cat of categories.value) {
+    const result = await GetCategoryDishes(cat.id)
+    if (result.code === 200) {
+      dishesByCategory.value[cat.id] = result.data
+    }else{
+      ElMessage.error(result.msg)
+    }
+  }
+}
 
 // ---------- 动画相关 ----------
 const progress = computed(() => Math.min(scrollTop.value / transitionEnd, 1))
@@ -405,8 +358,10 @@ const handleScroll = () => {
   }
 }
 
-onMounted(()=>{
-  search()
+onMounted(async()=>{
+ await search();
+ await getCategories();
+ await loadAllDishes();
 })
 </script>
 
@@ -732,7 +687,6 @@ onMounted(()=>{
 }
 
 .category-title {
-  width: 117.76px;
   height: 45.86px;
   display: flex;
   align-items: center;

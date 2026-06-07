@@ -34,9 +34,9 @@
       </div>
 
       <!-- 卡片列表 -->
-      <div v-for="shop in filteredShops" :key="shop.id" class="card">
+      <div v-for="shop in filteredShops" :key="shop.id" class="card" @click="goToShop(shop.id)">
         <!-- 左侧图片：直接放emoji，无背景，占1/3 -->
-        <img :src="getShopImg(shop.name)" class="card-emoji" alt="emoji" />
+        <img :src="shop.image" class="card-emoji" alt="商家图片" />
         <!-- 右侧详细信息容器 -->
         <div class="card-detail">
           <!-- 第1行：店名 -->
@@ -61,7 +61,7 @@
             <div class="line3-left">
               <span class="min-price">起送¥{{ shop.minPrice }}</span>
               <span class="delivery-fee strikethrough">配送¥{{ shop.deliveryFee }}</span>
-              <span class="delivery-fee">配送¥{{ shop.deliveryFee-2 }}</span>
+              <span class="delivery-fee">配送¥{{ shop.deliveryFee }}</span>
             </div>
             <div class="line3-right">
               <span class="campus-tag" v-if="shop.campus">校园送</span>
@@ -69,13 +69,13 @@
           </div>
 
           <!-- 第4行：商家描述（黄色背景橙色字） -->
-          <div class="line4" v-if="shop.description">
-            <span class="shop-desc">{{ shop.description }}</span>
+          <div class="line4" v-if="shop.special">
+            <span class="shop-desc">{{ shop.special }}</span>
           </div>
 
           <!-- 第5行：优惠标签列表 -->
-          <div class="line5" v-if="shop.discounts && shop.discounts.length">
-            <span v-for="(item, idx) in shop.discounts" :key="idx" class="discount">{{ item }}</span>
+          <div class="line5" v-if="discounts && discounts.length">
+            <span v-for="(item, idx) in discounts" :key="idx" class="discount">{{ item }}</span>
           </div>
         </div>
       </div>
@@ -91,9 +91,11 @@
 </template>
 
 <script setup>
-import { ref,computed } from 'vue'
+import {ref, computed, onMounted} from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
 import { useRouter } from 'vue-router'
+import { GetShopList } from '@/api/shop'
+import {ElMessage} from "element-plus";
 const router = useRouter()
 
 const goToShop = (id) => {
@@ -101,74 +103,18 @@ const goToShop = (id) => {
 }
 const searchKeyword = ref('')
 
-// 模拟数据（后期替换为API）
-const shops = ref([
-  {
-    id: 1,
-    name: '必胜客之超级强迪',
-    rating: 4.6,
-    monthlySales: 2000,
-    deliveryTime: 42,
-    distance: '1.2km',
-    minPrice: 88,
-    deliveryFee: 5,
-    campus: true,
-    description: '品质西餐·新鲜现做',
-    discounts: ['满65减5', '满100减15', '新客立减10']
-  },
-  {
-    id: 2,
-    name: '麦当劳',
-    rating: 4.5,
-    monthlySales: 800,
-    deliveryTime: 35,
-    distance: '800m',
-    minPrice: 59,
-    deliveryFee: 3,
-    campus: false,
-    description: '经典汉堡·快速出餐',
-    discounts: ['满65减5', '满100减15', '新客立减10']
-  },
-  {
-    id: 3,
-    name: '海底捞',
-    rating: 4.9,
-    monthlySales: 1200,
-    deliveryTime: 55,
-    distance: '2.0km',
-    minPrice: 199,
-    deliveryFee: 8,
-    campus: false,
-    description: '火锅盛宴·极致服务',
-    discounts: ['满65减5', '满100减15', '新客立减10']
-  },
-  {
-    id: 4,
-    name: '瑞幸咖啡',
-    rating: 4.7,
-    monthlySales: 950,
-    deliveryTime: 28,
-    distance: '500m',
-    minPrice: 35,
-    deliveryFee: 2,
-    campus: true,
-    description: '大师咖啡·便捷快取',
-    discounts: ['满65减5', '满100减15', '新客立减10']
-  },
-  {
-    id: 5,
-    name: '肯德基',
-    rating: 4.8,
-    monthlySales: 1500,
-    deliveryTime: 35,
-    distance: '1.0km',
-    minPrice: 59,
-    deliveryFee: 3,
-    campus: false,
-    description: '炸鸡专家·疯狂星期四',
-    discounts: ['满65减5', '满100减15', '新客立减10']
+const search = async() => {
+  const result = await GetShopList('')
+  if(result.code === 200){
+      shops.value = result.data
+  }else{
+    ElMessage.error(result.msg || "请求出错")
   }
-])
+}
+
+
+const shops = ref([])
+const discounts = ref(['满65减5', '满100减15', '新客立减10'])
 const filteredShops = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase()
   if (!keyword) return shops.value
@@ -191,8 +137,13 @@ const getShopImg = (name) => {
 const handleSearch = () => {
   if (searchKeyword.value.trim()) {
     console.log('搜索:', searchKeyword.value)
+    search(keyword)
   }
 }
+
+onMounted(()=>{
+search()
+})
 </script>
 
 <style scoped>

@@ -1,56 +1,93 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { ElMessage } from 'element-plus'
+
+import Home from '@/views/Home.vue'
+import Orders from '@/views/Orders.vue'
+import Profile from '@/views/Profile.vue'
+import ShopDetail from '@/views/ShopDetail.vue'
+import DishDetail from '@/views/DishDetail.vue'
+import Checkout from '@/views/Checkout.vue'
+import Payment from '@/views/Payment.vue'
+import PaySuccess from '@/views/PaySuccess.vue'
+import OrderResult from '@/views/OrderResult.vue'
+import Login from '@/views/Login.vue'
 
 const routes = [
     {
+        path: '/',
+        redirect: '/index'
+    },
+    {
+        path: '/login',
+        name: 'Login',
+        component: Login,
+        meta: { noAuth: true }
+    },
+    {
         path: '/index',
         name: 'Home',
-        component: () => import('@/views/Home.vue')
+        component: Home
     },
     {
         path: '/orders',
         name: 'Orders',
-        component: () => import('@/views/Orders.vue')
+        component: Orders
     },
     {
         path: '/profile',
         name: 'Profile',
-        component: () => import('@/views/Profile.vue')
+        component: Profile
     },
     {
         path: '/shop/:id',
         name: 'ShopDetail',
-        component: () => import('@/views/ShopDetail.vue')
+        component: ShopDetail
     },
     {
         path: '/dish/:id',
         name: 'DishDetail',
-        component: () => import('@/views/DishDetail.vue')
+        component: DishDetail
     },
     {
         path: '/checkout',
         name: 'Checkout',
-        component: () => import('@/views/Checkout.vue')
+        component: Checkout
     },
     {
         path: '/payment',
         name: 'Payment',
-        component: () => import('@/views/Payment.vue')
+        component: Payment
     },
     {
         path: '/pay-success',
         name: 'PaySuccess',
-        component: () => import('@/views/PaySuccess.vue')
+        component: PaySuccess
     },
     {
         path: '/order-result/:id',
         name: 'OrderResult',
-        component: () => import('@/views/OrderResult.vue')
+        component: OrderResult
     }
 ]
 
 const router = createRouter({
     history: createWebHistory(),
     routes
+})
+
+// 全局前置守卫
+router.beforeEach((to, from, next) => {
+    if (to.meta.noAuth) {
+        next()
+        return
+    }
+    const token = localStorage.getItem('token')
+    if (token) {
+        next()
+    } else {
+        ElMessage.warning('登录已超时，请重新登录')
+        next('/login')
+    }
 })
 
 export default router

@@ -46,13 +46,13 @@
     >
       <!-- 顶部大图 -->
       <div class="shop-cover">
-        <img :src="shopInfo.coverImg" class="cover-img" alt="封面" />
+        <img :src="shopInfo.image" class="cover-img" alt="封面" />
       </div>
 
       <!-- 商家信息卡片 -->
       <div class="shop-info-card">
         <div class="info-wrapper">
-          <img :src="shopInfo.logo" class="shop-logo" alt="店标" />
+          <img :src="shopInfo.image" class="shop-logo" alt="店标" />
           <div class="info-right">
             <div class="name-row">
               <span class="shop-name">{{ shopInfo.name }}</span>
@@ -75,7 +75,7 @@
               <div class="col-divider"></div>
               <div class="data-col">
                 <span class="data-label">商家特色</span>
-                <span class="data-value">{{ shopInfo.feature }}</span>
+                <span class="data-value">{{ shopInfo.special }}</span>
               </div>
             </div>
           </div>
@@ -88,16 +88,16 @@
             <span class="notice-text spacer">&nbsp;&nbsp;&nbsp;</span>
           </div>
         </div>
-        <div class="member-box" v-if="shopInfo.discounts && shopInfo.discounts.length">
+        <div class="member-box" v-if="discounts && discounts.length">
           <img src="/img/super_member.png" class="member-icon" alt="皇冠" />
           <div class="member-discounts">
             <span
-                v-for="(item, idx) in shopInfo.discounts"
+                v-for="(item, idx) in discounts"
                 :key="idx"
                 class="member-item"
             >
               {{ item }}
-              <span v-if="idx < shopInfo.discounts.length - 1" class="member-divider"></span>
+              <span v-if="idx < discounts.length - 1" class="member-divider"></span>
             </span>
           </div>
         </div>
@@ -176,10 +176,12 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import { useRoute } from 'vue-router'
 import CartBar from '@/components/CartBar.vue'
 import DishCard from "@/components/DishCard.vue"
+import { GetShopDetail } from '@/api/shop'
+import {ElMessage} from "element-plus";
 
 const tabBarRef = ref(null)
 const tabBarFixed = ref(false)
@@ -190,6 +192,9 @@ const scrollAreaRef = ref(null)
 const scrollTop = ref(0)
 const transitionEnd = 150
 const isManualJump = ref(false)   // 防止手动跳转时触发联动
+const route = useRoute()
+const shopId = route.params.id
+const discounts = ref(['满65减5', '满100减15', '满139减25', '新客立减10'])
 
 // ---------- 分类数据 ----------
 const categories = ref([
@@ -265,23 +270,23 @@ const dishesByCategory = ref({
   ]
 })
 
-const route = useRoute()
+
 const currentCategoryId = ref(1)
 
 // ---------- 商家信息 ----------
-const shopInfo = ref({
-  name: '必胜客之超级强迪',
-  rating: 4.6,
-  monthlySales: 2000,
-  deliveryTime: 42,
-  minPrice: 88,
-  deliveryFee: 5,
-  feature: '品质西餐',
-  coverImg: '/img/sj05.png',
-  logo: '/img/sp08.png',
-  notice: '公告：本店使用一次性环保餐具，请放心食用，新客立减10元，而且免费吃1145141919810根强迪！',
-  discounts: ['满65减5', '满100减15', '满139减25', '新客立减10']
-})
+const shopInfo = ref({})
+
+
+
+const search = async() => {
+  const result = await GetShopDetail(shopId)
+  if(result.code === 200){
+    shopInfo.value = result.data
+  }else{
+    ElMessage.error(result.msg || "请求错误")
+  }
+}
+
 
 // ---------- 动画相关 ----------
 const progress = computed(() => Math.min(scrollTop.value / transitionEnd, 1))
@@ -399,6 +404,10 @@ const handleScroll = () => {
     }
   }
 }
+
+onMounted(()=>{
+  search()
+})
 </script>
 
 <style scoped>

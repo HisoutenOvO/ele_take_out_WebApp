@@ -186,18 +186,18 @@ const handleCallShop = () => { console.log('电话商家') }
   overflow-y: auto;
 }
 
-/* ========== 灰色背景大容器 ========== */
+/* 灰色背景大容器 */
 .gray-wrapper {
   background: #f3f6f8;
   min-height: 100%;
 }
 
-/* ========== 白色内容块（紧贴，无间距） ========== */
+/* 白色内容块（紧贴，无间距） */
 .white-block {
   background: #fff;
 }
 
-/* ========== 第一块 ========== */
+/* 第一块 */
 .spacer-28 {
   width: 100%;
   height: 28px;
@@ -232,7 +232,7 @@ const handleCallShop = () => { console.log('电话商家') }
 .service-icon { font-size: 22px; }
 .service-text { font-size: 10px; color: #666; }
 
-/* ========== 第二块：订单状态 ========== */
+/* 第二块：订单状态 */
 .status-row {
   width: 100%;
   height: 49.25px;
@@ -248,7 +248,7 @@ const handleCallShop = () => { console.log('电话商家') }
   color: #111920;
 }
 
-/* ========== 第三块：送达地址 ========== */
+/* 第三块：送达地址 */
 .address-section {
   width: 100%;
   padding: 16.0533px 18.3467px;
@@ -285,7 +285,7 @@ const handleCallShop = () => { console.log('电话商家') }
   margin-top: 4px;
 }
 
-/* ========== 第四块：操作按钮 ========== */
+/* 第四块：操作按钮 */
 .action-section {
   width: 100%;
   padding: 2.29332px 16.0533px 11.4667px;
@@ -325,7 +325,7 @@ const handleCallShop = () => { console.log('电话商家') }
   color: #111920;
 }
 
-/* ========== 第五块：其他服务（上下灰色间距） ========== */
+/* 第五块：其他服务（上下灰色间距） */
 .other-block {
   background: #f3f6f8;
   padding: 10px 0;
@@ -376,7 +376,7 @@ const handleCallShop = () => { console.log('电话商家') }
   color: #cfcfcf;
   cursor: pointer;
 }
-/* ========== 菜品展示区域 ========== */
+/* 菜品展示区域 */
 .dish-show-block {
   padding-top: 9.17332px;
   padding-bottom: 4.58668px;
@@ -491,7 +491,7 @@ const handleCallShop = () => { console.log('电话商家') }
   box-sizing: border-box;
   border-bottom: 1px solid #e0e0e0;
 }
-/* ========== 六行信息块 ========== */
+/* 六行信息块 */
 .info-block {
   width: 100%;
   margin-bottom: 9.17332px;
@@ -532,7 +532,7 @@ const handleCallShop = () => { console.log('电话商家') }
 .info-value-line + .info-value-line {
   margin-top: 4px;
 }
-/* ========== 第六块：常见问题（上下灰色间距） ========== */
+/* 第六块：常见问题（上下灰色间距） */
 .faq-block {
   background: #f3f6f8;
   padding: 20px 0;

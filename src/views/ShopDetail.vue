@@ -1,6 +1,5 @@
 <template>
   <div class="page">
-    <!-- 独立的返回按钮 -->
     <div
         class="back-btn-fixed"
         :style="{ color: backBtnColor }"
@@ -9,7 +8,6 @@
       <i class="fas fa-chevron-left"></i>
     </div>
 
-    <!-- 固定搜索栏 -->
     <div
         class="floating-header"
         :style="{ opacity: headerOpacity }"
@@ -38,21 +36,18 @@
       </div>
     </div>
 
-    <!-- 可滚动内容区域 -->
     <div
         class="scroll-area"
         ref="scrollAreaRef"
         @scroll="handleScroll"
     >
-      <!-- 顶部大图 -->
       <div class="shop-cover">
-        <img :src="shopInfo.image" class="cover-img" alt="封面" />
+        <img :src="shopInfo.image" class="cover-img" alt="封面"/>
       </div>
 
-      <!-- 商家信息卡片 -->
       <div class="shop-info-card">
         <div class="info-wrapper">
-          <img :src="shopInfo.image" class="shop-logo" alt="店标" />
+          <img :src="shopInfo.image" class="shop-logo" alt="店标"/>
           <div class="info-right">
             <div class="name-row">
               <span class="shop-name">{{ shopInfo.name }}</span>
@@ -89,7 +84,7 @@
           </div>
         </div>
         <div class="member-box" v-if="discounts && discounts.length">
-          <img src="/img/super_member.png" class="member-icon" alt="皇冠" />
+          <img src="/img/super_member.png" class="member-icon" alt="皇冠"/>
           <div class="member-discounts">
             <span
                 v-for="(item, idx) in discounts"
@@ -104,7 +99,6 @@
       </div>
 
       <div class="goods-container" :class="{ 'fixed-layout': tabBarFixed }">
-        <!-- 条形容器 -->
         <div
             class="tab-bar"
             :class="{ 'tab-fixed': tabBarFixed }"
@@ -124,7 +118,6 @@
         <div v-if="tabBarFixed" class="tab-placeholder"></div>
 
         <div class="menu-area" :class="{ 'flex-fixed': tabBarFixed }">
-          <!-- 左侧分类 -->
           <div
               class="category-list"
               :class="{ 'fixed-height': tabBarFixed }"
@@ -142,7 +135,6 @@
             </div>
           </div>
 
-          <!-- 右侧菜品列表 -->
           <div
               class="dish-list"
               ref="dishListRef"
@@ -161,7 +153,7 @@
                   :key="dish.id"
                   :dish="dish"
                   :shopId="shopId"
-                  :quantity="cartStore.getQuantity(dish.id)"
+                  :quantity="getCartQuantity(dish.id)"
                   @cart-changed="loadCart"
               />
             </template>
@@ -170,8 +162,8 @@
       </div>
     </div>
 
-    <!-- 底部购物车栏 -->
     <CartBar
+        :cartItems="cartItems"
         :shopId="shopId"
         :deliveryFee="shopInfo.deliveryFee"
         :minPrice="shopInfo.minPrice"
@@ -180,16 +172,15 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from 'vue'
-import { useRoute } from 'vue-router'
+import {computed, onMounted, ref, watch} from 'vue'
+import {useRoute} from 'vue-router'
 import CartBar from '@/components/CartBar.vue'
 import DishCard from "@/components/DishCard.vue"
-import { GetShopDetail,GetShopCategory } from '@/api/shop'
-import { GetCategoryDishes } from '@/api/category'
-import {AddCart,DeleteCart,GetCartList} from '@/api/cart'
-import {ElMessage} from "element-plus";
-import { cartStore } from '@/stores/cartStore'
-
+import {GetShopDetail, GetShopCategory} from '@/api/shop'
+import {GetCategoryDishes} from '@/api/category'
+import {AddCart, DeleteCart, GetCartList} from '@/api/cart'
+import {ElMessage} from "element-plus"
+import {useCartRefresher} from '@/stores/cartRefresher'
 
 const tabBarRef = ref(null)
 const tabBarFixed = ref(false)
@@ -199,75 +190,60 @@ const dishListRef = ref(null)
 const scrollAreaRef = ref(null)
 const scrollTop = ref(0)
 const transitionEnd = 150
-const isManualJump = ref(false)   // 防止手动跳转时触发联动
+const isManualJump = ref(false)
 const route = useRoute()
 const shopId = Number(route.params.id)
 const discounts = ref(['满65减5', '满100减15', '满139减25', '新客立减10'])
-
-
 const categories = ref([])
-
-const dishes = ref([])
 const dishesByCategory = ref({})
-
-
-
 const currentCategoryId = ref(1)
-
-// ---------- 商家信息 ----------
 const shopInfo = ref({})
 
+const cartItems = ref([])
 
-// 购物车列表（本地维护，用于判断减号显示和数量）
-
-
-// 页面加载时获取购物车数据
-const loadCart = () => cartStore.load(shopId)
-
-// 获取某个菜品在购物车里的数量
-const getCartNumber = (dishId) => cartStore.getQuantity(dishId)
-
-// 加
-const handleAddToCart = async (dish) => {
-  await AddCart({
-    shopId: dish.shopId,
-    dishId: dish.id
-  })
-  await loadCart()  // 重新获取购物车数据，更新数量和总价
+const loadCart = async () => {
+  const result = await GetCartList(shopId)
+  if (result.code === 200) {
+    cartItems.value = result.data
+  }
 }
 
-// 减
-const handleRemoveFromCart = async (dish) => {
-  const cartItem = cartItems.value.find(i => i.dish_id === dish.id)
-  if (!cartItem) return
-  await DeleteCart({
-    shopId: dish.shopId,
-    dishId:cartItem.id})
-  await loadCart()
-}
-
-
-onMounted(async () => {
-  await search()
-  await getCategories()
-  await loadAllDishes()
-  await loadCart()
+const {version, bump} = useCartRefresher()
+watch(version, () => {
+  loadCart()
 })
 
-const search = async() => {
+const getCartQuantity = (dishId) => {
+  const item = cartItems.value.find(i => i.dishId === dishId)
+  return item ? item.number : 0
+}
+
+const handleAddToCart = async (dish) => {
+  await AddCart({shopId, dishId: dish.id})
+  await loadCart()
+  bump()
+}
+
+const handleRemoveFromCart = async (dish) => {
+  await DeleteCart(dish.id)
+  await loadCart()
+  bump()
+}
+
+const search = async () => {
   const result = await GetShopDetail(shopId)
-  if(result.code === 200){
+  if (result.code === 200) {
     shopInfo.value = result.data
-  }else{
+  } else {
     ElMessage.error(result.msg)
   }
 }
 
-const getCategories = async() => {
+const getCategories = async () => {
   const result = await GetShopCategory(shopId)
-  if(result.code === 200){
+  if (result.code === 200) {
     categories.value = result.data
-  }else{
+  } else {
     ElMessage.error(result.msg)
   }
 }
@@ -277,13 +253,12 @@ const loadAllDishes = async () => {
     const result = await GetCategoryDishes(cat.id)
     if (result.code === 200) {
       dishesByCategory.value[cat.id] = result.data
-    }else{
+    } else {
       ElMessage.error(result.msg)
     }
   }
 }
 
-// ---------- 动画相关 ----------
 const progress = computed(() => Math.min(scrollTop.value / transitionEnd, 1))
 const headerFixed = computed(() => scrollTop.value >= transitionEnd)
 const headerOpacity = computed(() => progress.value)
@@ -295,18 +270,15 @@ const backBtnColor = computed(() => {
 })
 const searchTranslateX = computed(() => `${(1 - progress.value) * 100}%`)
 
-// ---------- 左侧点击跳转 ----------
 const selectCategory = (id) => {
   currentCategoryId.value = id
   isManualJump.value = true
 
-  // 左侧列表滚动到可见位置
   const selectedItem = categoryListRef.value?.querySelector('.category-item.selected')
   if (selectedItem) {
-    selectedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    selectedItem.scrollIntoView({block: 'nearest', inline: 'nearest'})
   }
 
-  // 右侧跳转到对应标题
   const targetEl = document.getElementById(`cat-${id}`)
   if (!targetEl) return
 
@@ -316,7 +288,7 @@ const selectCategory = (id) => {
       const containerRect = container.getBoundingClientRect()
       const targetRect = targetEl.getBoundingClientRect()
       const offsetTopInContainer = targetRect.top - containerRect.top + container.scrollTop
-      container.scrollTo({ top: offsetTopInContainer - 8, behavior: 'smooth' })
+      container.scrollTo({top: offsetTopInContainer - 8, behavior: 'smooth'})
     }
   } else {
     const scrollContainer = scrollAreaRef.value
@@ -324,7 +296,7 @@ const selectCategory = (id) => {
       const containerRect = scrollContainer.getBoundingClientRect()
       const targetRect = targetEl.getBoundingClientRect()
       const offsetTop = targetRect.top - containerRect.top + scrollContainer.scrollTop
-      scrollContainer.scrollTo({ top: offsetTop - 76 - 8, behavior: 'smooth' })
+      scrollContainer.scrollTo({top: offsetTop - 76 - 8, behavior: 'smooth'})
     }
   }
 
@@ -333,8 +305,6 @@ const selectCategory = (id) => {
   }, 600)
 }
 
-// ---------- 右侧滚动联动左侧高亮 ----------
-// 非固定模式：基于全局滚动
 const updateActiveCategoryForGlobal = () => {
   const titles = document.querySelectorAll('.category-title')
   if (titles.length === 0) return
@@ -352,7 +322,6 @@ const updateActiveCategoryForGlobal = () => {
   }
 }
 
-// 固定模式：基于右侧容器内部滚动
 const updateActiveCategoryForFixed = () => {
   const container = dishListRef.value
   if (!container) return
@@ -373,7 +342,7 @@ const updateActiveCategoryForFixed = () => {
     currentCategoryId.value = activeId
   }
 }
-const getCartQuantity = (dishId) => cartStore.getQuantity(dishId)
+
 const handleDishScroll = () => {
   if (!isManualJump.value) {
     updateActiveCategoryForFixed()
@@ -400,11 +369,11 @@ const handleScroll = () => {
   }
 }
 
-onMounted(async()=>{
- await search();
- await getCategories();
- await loadAllDishes();
- await loadCart();
+onMounted(async () => {
+  await search()
+  await getCategories()
+  await loadAllDishes()
+  await loadCart()
 })
 </script>
 
@@ -469,7 +438,7 @@ onMounted(async()=>{
   border: 1px solid #000;
   border-right: none;
   border-radius: 20px 0 0 20px;
-  background: rgb(243,246,248);
+  background: rgb(243, 246, 248);
   color: #333;
   font-size: 18px;
   flex-shrink: 0;
@@ -484,7 +453,7 @@ onMounted(async()=>{
   padding: 0 12px;
   font-size: 14px;
   outline: none;
-  background: rgb(243,246,248);
+  background: rgb(243, 246, 248);
   color: #333;
   max-width: 251.78px;
   box-sizing: border-box;
@@ -575,12 +544,30 @@ onMounted(async()=>{
   padding: 0 5px;
 }
 
-.data-label { font-size: 11px; color: #999; line-height: 14px; }
-.data-value { font-size: 13px; color: #333; font-weight: 700; line-height: 14px; }
-.rating-value { color: #e59400; }
-.col-divider { width: 1px; height: 28px; background: #e0e0e0; flex-shrink: 0; align-self: center; }
+.data-label {
+  font-size: 11px;
+  color: #999;
+  line-height: 14px;
+}
 
-/* 公告栏容器：保持 padding，确保左右有间隙 */
+.data-value {
+  font-size: 13px;
+  color: #333;
+  font-weight: 700;
+  line-height: 14px;
+}
+
+.rating-value {
+  color: #e59400;
+}
+
+.col-divider {
+  width: 1px;
+  height: 28px;
+  background: #e0e0e0;
+  flex-shrink: 0;
+  align-self: center;
+}
 
 .notice-bar {
   margin-top: 8px;
@@ -590,8 +577,6 @@ onMounted(async()=>{
   align-items: center;
   overflow: hidden;
 }
-
-
 
 .notice-scroll {
   display: flex;
@@ -612,14 +597,18 @@ onMounted(async()=>{
 }
 
 @keyframes scroll-left {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .member-box {
   margin: 8px 16px 0;
   padding: 4px 12px;
-  background: rgb(255,227,183);
+  background: rgb(255, 227, 183);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -627,10 +616,35 @@ onMounted(async()=>{
   width: fit-content;
   max-width: calc(100% - 32px);
 }
-.member-icon { width: 15px; height: 15px; flex-shrink: 0; }
-.member-discounts { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
-.member-item { font-size: 12px; color: #8B4513; display: flex; align-items: center; white-space: nowrap; }
-.member-divider { width: 1px; height: 12px; background: #8B4513; margin: 0 8px; flex-shrink: 0; }
+
+.member-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.member-discounts {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.member-item {
+  font-size: 12px;
+  color: #8B4513;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.member-divider {
+  width: 1px;
+  height: 12px;
+  background: #8B4513;
+  margin: 0 8px;
+  flex-shrink: 0;
+}
 
 .goods-container {
   background: #fff;
@@ -639,6 +653,7 @@ onMounted(async()=>{
   min-height: 100vh;
   transition: height 0.2s;
 }
+
 .goods-container.fixed-layout {
   height: calc(100vh - 76px - 56px);
   display: flex;
@@ -657,6 +672,7 @@ onMounted(async()=>{
   gap: 50px;
   padding-left: 20px;
 }
+
 .tab-item {
   display: flex;
   align-items: center;
@@ -667,7 +683,12 @@ onMounted(async()=>{
   color: #666;
   font-size: 16px;
 }
-.tab-item.active { color: #222; font-weight: 600; }
+
+.tab-item.active {
+  color: #222;
+  font-weight: 600;
+}
+
 .active-line {
   position: absolute;
   bottom: 0;
@@ -686,14 +707,23 @@ onMounted(async()=>{
   width: 100%;
   max-width: 100%;
   z-index: 99;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-.tab-placeholder { height: 48px; }
 
-.menu-area { flex: 1; display: flex; overflow: hidden; }
-.menu-area.flex-fixed { height: 100%; }
+.tab-placeholder {
+  height: 48px;
+}
 
-/* 左侧分类 - 默认 */
+.menu-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.menu-area.flex-fixed {
+  height: 100%;
+}
+
 .category-list {
   width: 100px;
   max-height: calc(100vh - 76px - 48px - 56px - 9px);
@@ -708,7 +738,6 @@ onMounted(async()=>{
   flex-shrink: 0;
 }
 
-/* 固定模式下撑满高度 */
 .category-list.fixed-height {
   max-height: none !important;
   height: 100% !important;
@@ -731,21 +760,25 @@ onMounted(async()=>{
   z-index: 0;
   transition: color 0.2s, font-weight 0.2s;
 }
+
 .category-item.selected::before {
   content: '';
   position: absolute;
-  top: -16.05px; left: -16.05px; right: -16.05px; bottom: -16.05px;
+  top: -16.05px;
+  left: -16.05px;
+  right: -16.05px;
+  bottom: -16.05px;
   background: #fff;
   border-radius: 8px;
   z-index: -1;
 }
+
 .category-item.selected {
   color: #111920;
   font-weight: bold;
   background: transparent;
 }
 
-/* 右侧菜品列表 */
 .dish-list {
   flex: 1;
   overflow-y: auto;
@@ -775,6 +808,7 @@ onMounted(async()=>{
   justify-content: center;
   flex-shrink: 0;
 }
+
 .cat-name {
   width: 34.42px;
   height: 34.4px;

@@ -1,6 +1,5 @@
 <template>
   <div class="page">
-    <!-- ========== 顶部固定区域 ========== -->
     <div class="top-fixed">
       <div class="top-bg-block"></div>
       <div class="top-row">
@@ -11,9 +10,7 @@
       </div>
     </div>
 
-    <!-- ========== 中间可滚动区域 ========== -->
     <div class="scroll-area" ref="scrollAreaRef" @scroll="handleScroll">
-      <!-- 轮播条 -->
       <div class="notice-bar">
         <div class="notice-content">
           <i class="fas fa-bullhorn notice-icon"></i>
@@ -33,15 +30,12 @@
       </div>
 
       <div class="section-wrapper">
-        <!-- ========== 第一块内容区域 ========== -->
         <div class="content-area">
-          <!-- 收货地址 -->
           <div class="address-row" @click="showAddressPopup = true" v-if="!currentAddressId">
             <span class="address-label">请选择收货地址</span>
             <span class="address-arrow">›</span>
           </div>
 
-          <!-- 选中地址后的卡片 -->
           <div class="address-card" v-else>
             <div class="address-card-line1">
               <span class="address-card-tag">{{ selectedAddress.tag }}</span>
@@ -60,7 +54,6 @@
             </div>
           </div>
 
-          <!-- 是否需要配送入校 -->
           <div class="school-row">
             <span class="school-title">需要配送入校</span>
             <div class="school-options">
@@ -79,7 +72,6 @@
             </div>
           </div>
 
-          <!-- 立即送出 / 预约配送 -->
           <div class="delivery-row">
             <div class="delivery-card active">
               <div class="delivery-card-inner">
@@ -95,20 +87,17 @@
             </div>
           </div>
 
-          <!-- 超时赔付等 -->
           <div class="compensate-row">
             <span class="compensate-title">超1分钟赔</span>
             <span class="compensate-detail">最高赔8元可叠加红包</span>
             <span class="compensate-gift">商家赠送</span>
           </div>
 
-          <!-- 配送提示 -->
           <div class="notice-row">
             <span class="notice-tip">因配送订单较多，送达时间可能波动</span>
           </div>
         </div>
 
-        <!-- ========== 第二块：商家信息 + 菜品列表 ========== -->
         <div class="content-area second-block">
           <div class="shop-info-header">
             <span class="shop-name">{{ shopName }}</span>
@@ -132,7 +121,6 @@
           </div>
         </div>
 
-        <!-- ========== 第三块：费用明细 + 合计 ========== -->
         <div class="content-area third-block">
           <div class="fee-row">
             <span class="fee-label">打包费</span>
@@ -185,7 +173,6 @@
           </div>
         </div>
 
-        <!-- ========== 备注与餐具 ========== -->
         <div class="content-area remark-block">
           <div class="remark-row">
             <span class="remark-label">备注</span>
@@ -210,7 +197,6 @@
           </div>
         </div>
 
-        <!-- ========== 号码保护与安心权益 ========== -->
         <div class="content-area safety-block">
           <div class="safety-section">
             <div class="safety-row">
@@ -243,7 +229,6 @@
       </div>
     </div>
 
-    <!-- ========== 底部固定区域 ========== -->
     <div class="bottom-bar">
       <div class="bottom-inner">
         <div class="price-info">
@@ -268,7 +253,6 @@
       </div>
     </div>
 
-    <!-- ========== 地址选择弹出层 ========== -->
     <div
         class="address-overlay"
         :class="{ show: showAddressPopup }"
@@ -321,22 +305,22 @@ import { GetAddressList } from '@/api/address'
 import { ElMessage } from "element-plus"
 import { GetShopDetail } from '@/api/shop'
 import { GetCartList } from '@/api/cart'
-import {SubmitOrder} from '@/api/orders'
-// ========== 数据 ==========
+import { SubmitOrder } from '@/api/orders'
+import { useRoute } from "vue-router"
+
 const shopName = ref('')
 const deliveryFee = ref(0)
 const minPrice = ref(0)
-const cartItems = ref([])            // 购物车列表
-const cartTotal = ref(0)             // 购物车总价
-const packingFee = ref(1)            // 打包费写死，后期可改
+const cartItems = ref([])
+const cartTotal = ref(0)
+const packingFee = ref(1)
 const redPacket = ref(19)
 const totalDiscount = ref(19)
 const campusNeed = ref(true)
-const shopId = localStorage.getItem('currentShopId')
+const route = useRoute()
+const shopId = Number(route.params.shopId)
 
-// ========== 加载所有数据 ==========
 const loadData = async () => {
-
   const cartResult = await GetCartList(shopId)
   if (cartResult.code !== 200 || !cartResult.data || cartResult.data.length === 0) {
     ElMessage.warning('购物车为空，请先添加商品')
@@ -354,7 +338,6 @@ const loadData = async () => {
   cartTotal.value = cartResult.data.reduce((sum, item) => sum + item.amount * item.number, 0) - 19 + packingFee.value + deliveryFee.value
 }
 
-// ========== 地址 ==========
 const showAddressPopup = ref(false)
 const addressList = ref([])
 const currentAddressId = ref(null)
@@ -377,20 +360,19 @@ const selectAddress = (id) => {
 }
 const editAddress = (id) => console.log('编辑地址:', id)
 
-// ========== 其他 ==========
 const estimatedTime = computed(() => {
   const now = new Date()
   now.setMinutes(now.getMinutes() + 30 + Math.floor(Math.random() * 11))
-  return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 })
 
 const noticeList = ref(['适量点餐，环保健康', '远距离配送，配送费原价上调', '欢迎光临，祝您用餐愉快'])
 const currentNotice = ref(0)
 let noticeTimer = null
 
-
-const handleSubmit = async() =>{
+const handleSubmit = async () => {
   if (currentAddressId.value === null || currentAddressId.value === undefined) {
+    ElMessage.closeAll()
     ElMessage.warning('请先选择收货地址')
     return
   }
@@ -400,7 +382,7 @@ const handleSubmit = async() =>{
     addressId: currentAddressId.value
   }
   const result = await SubmitOrder(order)
-  const orderId= result.data.id
+  const orderId = result.data.id
   router.push(`/payment/${orderId}`)
 }
 
@@ -416,7 +398,6 @@ onUnmounted(() => clearInterval(noticeTimer))
 </script>
 
 <style scoped>
-/* ========== 全局 ========== */
 .page {
   height: 100vh;
   display: flex;
@@ -430,7 +411,6 @@ onUnmounted(() => clearInterval(noticeTimer))
       sans-serif;
 }
 
-/* ========== 顶部固定区域 ========== */
 .top-fixed {
   flex-shrink: 0;
   background: linear-gradient(
@@ -476,7 +456,7 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #111920;
   line-height: 44px;
 }
-/* 灰色背景大容器 */
+
 .section-wrapper {
   background: #f3f6f8;
   padding-bottom: 12px;
@@ -484,14 +464,15 @@ onUnmounted(() => clearInterval(noticeTimer))
 
 .content-area {
   margin-bottom: 12px;
+  padding: 0;
+  background: #fff;
 }
-/* ========== 中间可滚动区域 ========== */
+
 .scroll-area {
   flex: 1;
   overflow-y: auto;
 }
 
-/* 轮播条 */
 .notice-bar {
   width: 100%;
   height: 29.81px;
@@ -541,20 +522,10 @@ onUnmounted(() => clearInterval(noticeTimer))
   white-space: nowrap;
 }
 
-/* ========== 第一块内容区域 ========== */
-.content-area {
-  padding: 0;
-  background: #fff;
-}
-
-/* 第一行：收货地址 */
 .address-row {
   width: 100%;
   height: 50.63px;
-  padding:
-      11.4667px
-      18.3467px
-      9.17332px;
+  padding: 11.4667px 18.3467px 9.17332px;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -575,13 +546,10 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #7c889c;
 }
 
-/* 第二行：配送入校 */
 .school-row {
   width: 100%;
   height: 43.55px;
-  padding:
-      11.4667px
-      18.3467px;
+  padding: 11.4667px 18.3467px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -635,13 +603,9 @@ onUnmounted(() => clearInterval(noticeTimer))
   border-color: #ff6300;
 }
 
-/* 第三行：配送方式 */
 .delivery-row {
   width: 100%;
-  padding:
-      1.14668px
-      18.3467px
-      9.17332px;
+  padding: 1.14668px 18.3467px 9.17332px;
   display: flex;
   gap: 6.88px;
   box-sizing: border-box;
@@ -649,9 +613,7 @@ onUnmounted(() => clearInterval(noticeTimer))
 
 .delivery-card {
   flex: 1;
-  padding:
-      6.30668px
-      9.17332px;
+  padding: 6.30668px 9.17332px;
   border-radius: 8px;
   background: #f3f6f8;
 }
@@ -687,7 +649,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #7c889c;
 }
 
-/* 第四行：赔付信息 */
 .compensate-row {
   width: 100%;
   height: 45.51px;
@@ -717,14 +678,10 @@ onUnmounted(() => clearInterval(noticeTimer))
   white-space: nowrap;
 }
 
-/* 第五行：配送波动提示 */
 .notice-row {
   width: 100%;
   height: 43.22px;
-  padding:
-      6.88px
-      18.3467px
-      18.3467px;
+  padding: 6.88px 18.3467px 18.3467px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -735,7 +692,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #ff6200;
 }
 
-/* 测试滚动区域 */
 .goods-list-area {
   padding: 16px;
 }
@@ -752,7 +708,7 @@ onUnmounted(() => clearInterval(noticeTimer))
   font-size: 18px;
   color: #333;
 }
-/* ========== 第二块：商家信息 + 菜品 ========== */
+
 .second-block {
   padding-top: 9.17332px;
 }
@@ -782,7 +738,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   white-space: nowrap;
 }
 
-/* 菜品项 */
 .cart-item {
   width: 100%;
   height: 75.68px;
@@ -825,7 +780,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   margin-top: 3.44px;
 }
 
-/* 菜品价格（小号） */
 .cart-item-price {
   display: flex;
   align-items: baseline;
@@ -849,7 +803,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   line-height: 30px;
 }
 
-/* ========== 第三块：费用明细 ========== */
 .third-block {
   padding: 0;
 }
@@ -952,7 +905,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   margin: 0 18.3467px;
 }
 
-/* 合计行 */
 .total-row {
   width: 100%;
   height: 39.25px;
@@ -998,7 +950,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #111920;
 }
 
-/* 红包折扣文字加大 */
 .red-discount {
   font-size: 15px;
   color: #ff4b33;
@@ -1007,12 +958,11 @@ onUnmounted(() => clearInterval(noticeTimer))
   align-items: baseline;
 }
 
-/* 返豆文字加大 */
 .bean-text {
   font-size: 14px;
   color: #ff352e;
 }
-/* 总价大号数字 */
+
 .price-number-big {
   font-size: 24px;
   font-weight: 700;
@@ -1020,7 +970,7 @@ onUnmounted(() => clearInterval(noticeTimer))
   height: 34.67px;
   line-height: 34.67px;
 }
-/* ========== 第三块：备注与餐具 ========== */
+
 .remark-block {
   width: 100%;
   padding: 9.17332px 18.3467px;
@@ -1059,7 +1009,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #ff6200;
 }
 
-/* ========== 第四块：号码保护与安心权益 ========== */
 .safety-block {
   width: 100%;
   padding: 9.17332px 18.3467px;
@@ -1132,7 +1081,7 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #111920;
   margin-right: 4px;
 }
-/* ========== 底部固定区域 ========== */
+
 .bottom-bar {
   flex-shrink: 0;
   width: 100%;
@@ -1153,16 +1102,14 @@ onUnmounted(() => clearInterval(noticeTimer))
   justify-content: space-between;
 }
 
-/* 左侧价格信息 */
-
 .price-info {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
   height: 100%;
-  margin-right: 8px;          /* 稍微缩小右边距，给文字多留空间 */
-  white-space: nowrap;        /* 强制不换行 */
+  margin-right: 8px;
+  white-space: nowrap;
 }
 
 .price-line1 {
@@ -1172,13 +1119,13 @@ onUnmounted(() => clearInterval(noticeTimer))
 }
 
 .total-text {
-  font-size: 12px;            /* 缩小到15px */
+  font-size: 12px;
   color: #000000e6;
   line-height: 15px;
 }
 
 .total-symbol {
-  font-size: 15px;            /* 缩小到15px */
+  font-size: 15px;
   color: #ff5128;
   line-height: 15px;
 }
@@ -1218,7 +1165,7 @@ onUnmounted(() => clearInterval(noticeTimer))
   display: inline-block;
   text-align: right;
 }
-/* 按钮 */
+
 .submit-btn {
   width: 123.83px;
   height: 45.86px;
@@ -1226,15 +1173,15 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #f3f6f8;
   border: none;
   border-radius: 8px;
-  font-size: 18px;          /* 字体调大 */
-  font-weight: 400;         /* 取消加粗 */
-  letter-spacing: 1px;      /* 字间距变小 */
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-/* ========== 地址弹出层 ========== */
+
 .address-overlay {
   position: fixed;
   top: 0;
@@ -1273,22 +1220,21 @@ onUnmounted(() => clearInterval(noticeTimer))
 .address-popup-header {
   display: flex;
   align-items: center;
-  justify-content: center;       /* 内容水平居中 */
+  justify-content: center;
   height: 55.03px;
   padding: 0 18px;
   border-bottom: 1px solid #f0f0f0;
-  position: relative;            /* 为关闭按钮绝对定位提供参照 */
+  position: relative;
 }
 
 .address-popup-title {
   font-size: 20px;
   font-weight: 600;
   color: #111920;
-  text-align: center;            /* 文字居中 */
-  flex: 1;                       /* 占满剩余空间 */
+  text-align: center;
+  flex: 1;
 }
 
-/* 关闭按钮用绝对定位固定到右侧 */
 .address-popup-close {
   position: absolute;
   right: 18px;
@@ -1314,12 +1260,11 @@ onUnmounted(() => clearInterval(noticeTimer))
   overflow-y: auto;
 }
 
-/* 地址列表项 */
 .address-item {
   width: 100%;
   padding: 13.76px 0;
   display: flex;
-  align-items: center;          /* 从 flex-start 改为 center */
+  align-items: center;
   border-bottom: 1.5px solid #f5f5f5;
   cursor: pointer;
 }
@@ -1328,7 +1273,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   background: #fafafa;
 }
 
-/* 左侧圆圈 */
 .address-radio {
   width: 50.44px;
   padding-left: 18.3467px;
@@ -1360,7 +1304,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   color: #fff;
 }
 
-/* 中间信息 */
 .address-info {
   flex: 1;
   display: flex;
@@ -1416,7 +1359,6 @@ onUnmounted(() => clearInterval(noticeTimer))
   margin-left: 9.17332px;
 }
 
-/* 右侧编辑图标 */
 .address-edit {
   width: 22.93px;
   height: 22.93px;
@@ -1429,7 +1371,7 @@ onUnmounted(() => clearInterval(noticeTimer))
   font-size: 16px;
   cursor: pointer;
 }
-/* ========== 选中地址后的卡片 ========== */
+
 .address-card {
   width: 100%;
   padding: 11.4667px 18.3467px 9.17332px;

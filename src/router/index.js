@@ -12,6 +12,7 @@ import PaySuccess from '@/views/PaySuccess.vue'
 import OrderResult from '@/views/OrderResult.vue'
 import Login from '@/views/Login.vue'
 import Register from '@/views/Register.vue'
+import Address from '@/views/AddressList.vue'
 
 const routes = [
     {
@@ -50,7 +51,7 @@ const routes = [
         component: DishDetail
     },
     {
-        path: '/checkout',
+        path: '/checkout/:shopId',
         name: 'Checkout',
         component: Checkout
     },
@@ -60,7 +61,7 @@ const routes = [
         component: Payment
     },
     {
-        path: '/pay-success',
+        path: '/pay-success/:orderId',
         name: 'PaySuccess',
         component: PaySuccess
     },
@@ -68,6 +69,11 @@ const routes = [
         path: '/order-result/:id',
         name: 'OrderResult',
         component: OrderResult
+    },
+    {
+        path: '/address-list',
+        name: 'AddressList',
+        component: Address
     },
     {
         path: '/register',

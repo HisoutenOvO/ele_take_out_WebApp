@@ -1,13 +1,11 @@
 import { reactive } from 'vue'
+import { GetCartList } from '@/api/cart'
 
-// 全局共享的购物车数据
 export const cartStore = reactive({
-    items: [],       // 购物车列表
-    total: 0,        // 总价
+    items: [],
+    total: 0,
 
-    // 加载购物车
     async load(shopId) {
-        const { GetCartList } = await import('@/api/cart')
         const result = await GetCartList(shopId)
         if (result.code === 200) {
             this.items = result.data
@@ -15,9 +13,14 @@ export const cartStore = reactive({
         }
     },
 
-    // 获取某个菜品的数量
     getQuantity(dishId) {
         const item = this.items.find(i => i.dishId === dishId)
         return item ? item.number : 0
+    },
+
+    // 👇 关键：清空购物车数据，用于退出登录时调用
+    clear() {
+        this.items = []
+        this.total = 0
     }
 })

@@ -24,20 +24,36 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { GetCartList } from '@/api/cart'
 import { cartStore } from '@/stores/cartStore'
+//*******************************
 
-// 直接使用 cartStore 里的总价和购物车列表
-const totalPrice = computed(() => cartStore.total)
-const cartItems = computed(() => cartStore.items)
 
-// 加载购物车
-onMounted(() => cartStore.load(props.shopId))
 const props = defineProps({
+  cartItems: { type: Array, default: () => [] },
   shopId: { type: Number, required: true },
   deliveryFee: { type: Number, default: 0 },
   minPrice: { type: Number, default: 0 }
 })
 
 const router = useRouter()
+const totalPrice = computed(() => {
+  return props.cartItems.reduce((sum, item) => sum + item.amount * item.number, 0)
+})
+
+const handleCheckout = () => {
+  if (totalPrice.value >= props.minPrice) {
+    router.push(`/checkout/${props.shopId}`)
+  }
+}
+//******************************
+// 直接使用 cartStore 里的总价和购物车列表
+
+const cartItems = computed(() => cartStore.items)
+
+// 加载购物车
+onMounted(() => cartStore.load(props.shopId))
+
+
+
 
 const loadCart = async () => {
   // 直接打印，确认函数被调用
@@ -50,13 +66,7 @@ const loadCart = async () => {
   }
 }
 
-const handleCheckout = () => {
-  if (totalPrice.value >= props.minPrice) {
-    console.log('CartBar 收到的 shopId:', props.shopId)
-    localStorage.setItem('currentShopId', props.shopId) // 存储 shopId
-    router.push('/checkout')
-  }
-}
+
 
 onMounted(() => {
   console.log('CartBar onMounted 执行了')

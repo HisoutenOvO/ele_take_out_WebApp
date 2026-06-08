@@ -1,12 +1,10 @@
 <template>
   <div class="page">
-    <!-- 顶部橙色区域 -->
     <div class="top-area">
       <h1 class="logo">闪购</h1>
       <p class="subtitle">创建账号</p>
     </div>
 
-    <!-- 注册表单 -->
     <div class="register-form">
       <div class="form-item">
         <i class="fas fa-user icon"></i>
@@ -53,10 +51,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { userRegister } from '@/api/login'
+import {ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {ElMessage} from 'element-plus'
+import {userRegister} from '@/api/login'
 
 const router = useRouter()
 
@@ -68,19 +66,16 @@ const registerForm = ref({
 })
 
 const handleRegister = async () => {
-  // 前端校验
   if (!registerForm.value.username || !registerForm.value.phone || !registerForm.value.nickname || !registerForm.value.password) {
     ElMessage.warning('请填写所有字段')
     return
   }
 
-  // 手机号简单校验
   if (!/^1[3-9]\d{9}$/.test(registerForm.value.phone)) {
     ElMessage.warning('请输入正确的手机号')
     return
   }
 
-  // 密码长度校验
   if (registerForm.value.password.length < 6) {
     ElMessage.warning('密码长度不能少于6位')
     return
@@ -127,7 +122,7 @@ const goLogin = () => {
 
 .subtitle {
   font-size: 16px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255, 255, 255, 0.8);
   margin-top: 10px;
 }
 

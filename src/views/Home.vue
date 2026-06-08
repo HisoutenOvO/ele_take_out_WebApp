@@ -1,6 +1,5 @@
 <template>
   <div class="page">
-    <!-- 顶部固定区域 -->
     <div class="top">
       <div class="yellow-bar">
         <h1>淘宝闪购</h1>
@@ -12,7 +11,6 @@
       </div>
       <div class="gap"></div>
 
-      <!-- 搜索栏：左侧放大镜图标 -->
       <div class="search-bar">
         <i class="fa-brands fa-sistrix search-icon" style="flex:0 0 6vw;"></i>
         <input
@@ -25,7 +23,6 @@
       </div>
     </div>
 
-    <!-- 中间滚动区域 -->
     <div class="scroll">
       <div class="recommend-header">
         <span class="line"></span>
@@ -33,18 +30,13 @@
         <span class="line"></span>
       </div>
 
-      <!-- 卡片列表 -->
       <div v-for="shop in shops" :key="shop.id" class="card" @click="goToShop(shop.id)">
-        <!-- 左侧图片：直接放emoji，无背景，占1/3 -->
         <img :src="shop.image" class="card-emoji" alt="商家图片" />
-        <!-- 右侧详细信息容器 -->
         <div class="card-detail">
-          <!-- 第1行：店名 -->
           <div class="line1">
             <span class="shop-name">{{ shop.name }}</span>
           </div>
 
-          <!-- 第2行：评分 月售 | 时间 距离 -->
           <div class="line2">
             <div class="line2-left">
               <span class="rating">{{ shop.rating }}分</span>
@@ -56,7 +48,6 @@
             </div>
           </div>
 
-          <!-- 第3行：起送 配送 | 校园送 -->
           <div class="line3">
             <div class="line3-left">
               <span class="min-price">起送¥{{ shop.minPrice }}</span>
@@ -68,12 +59,10 @@
             </div>
           </div>
 
-          <!-- 第4行：商家描述（黄色背景橙色字） -->
           <div class="line4" v-if="shop.special">
             <span class="shop-desc">{{ shop.special }}</span>
           </div>
 
-          <!-- 第5行：优惠标签列表 -->
           <div class="line5" v-if="discounts && discounts.length">
             <span v-for="(item, idx) in discounts" :key="idx" class="discount">{{ item }}</span>
           </div>
@@ -83,7 +72,6 @@
       <div class="end">— 已经到底了 —</div>
     </div>
 
-    <!-- 底部固定导航 -->
     <div class="bottom">
       <BottomNav />
     </div>
@@ -126,7 +114,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 全局重置 */
 * {
   margin: 0;
   padding: 0;
@@ -141,7 +128,6 @@ onMounted(() => {
   background: #f5f5f5;
 }
 
-/* 顶部 */
 .top {
   flex-shrink: 0;
 }
@@ -152,7 +138,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   color: white;
-  gap: 12px;   /* logo 和地址之间的间距 */
+  gap: 12px;
 }
 
 .yellow-bar h1 {
@@ -161,6 +147,7 @@ onMounted(() => {
   font-style: italic;
   flex-shrink: 0;
 }
+
 .address {
   display: flex;
   gap: 6px;
@@ -171,13 +158,11 @@ onMounted(() => {
   height: 12px;
 }
 
-/* 搜索栏 */
-/* 搜索栏 */
 .search-bar {
   display: flex;
   align-items: center;
   padding: 0 16px 12px;
-  height: 40px;                    /* 统一高度 */
+  height: 40px;
 }
 
 .search-icon {
@@ -191,7 +176,7 @@ onMounted(() => {
   background: white;
   border: 1px solid #ddd;
   border-right: none;
-  border-radius: 20px 0 0 20px;    /* 左半圆角 */
+  border-radius: 20px 0 0 20px;
 }
 
 .search-input {
@@ -217,38 +202,40 @@ onMounted(() => {
   padding: 0 20px;
   background: #ED6C2D;
   border: none;
-  border-radius: 0 20px 20px 0;    /* 右半圆角 */
+  border-radius: 0 20px 20px 0;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   color: white;
   white-space: nowrap;
 }
+
 .recommend-header {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 16px 12px;
 }
+
 .line {
   flex: 1;
   height: 1px;
   background: #ddd;
 }
+
 .title-text {
   font-size: 14px;
   color: #666;
   white-space: nowrap;
   flex-shrink: 0;
 }
-/* 中间滚动区域 */
+
 .scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 0 12px 16px;  /* 上边距 0，左右 12px，下边距 16px */
+  padding: 0 12px 16px;
 }
 
-/* 卡片 */
 .card {
   display: flex;
   gap: 12px;
@@ -280,10 +267,10 @@ onMounted(() => {
   min-width: 0;
 }
 
-/* 第1行 */
 .line1 {
   display: flex;
 }
+
 .shop-name {
   font-size: 18px;
   font-weight: 700;
@@ -294,61 +281,67 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-/* 第2行 */
 .line2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .line2-left {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+
 .rating {
   font-size: 16px;
   font-weight: 700;
   color: #e59400;
 }
+
 .monthly-sales {
   font-size: 14px;
   color: #999;
 }
+
 .line2-right {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .time, .distance {
   font-size: 14px;
   color: #666;
 }
 
-/* 第3行 */
 .line3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .line3-left {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+
 .min-price, .delivery-fee {
   font-size: 14px;
   color: #666;
 }
+
 .campus-tag {
   font-size: 14px;
   font-weight: 700;
   color: #e59400;
 }
 
-/* 第4行：黄底橙字 */
 .line4 {
   display: flex;
 }
+
 .shop-desc {
   font-size: 12px;
   color: #e67e22;
@@ -358,10 +351,10 @@ onMounted(() => {
   font-weight: 500;
 }
 
-/* 第5行 */
 .line5 {
   display: flex;
 }
+
 .discount {
   font-size: 12px;
   color: #d73232;
@@ -370,7 +363,6 @@ onMounted(() => {
   border-radius: 3px;
 }
 
-/* 底部文字 */
 .end {
   text-align: center;
   color: #ccc;
@@ -378,22 +370,24 @@ onMounted(() => {
   padding: 10px;
 }
 
-/* 底部导航 */
 .bottom {
   flex-shrink: 0;
   display: flex;
   background: white;
   border-top: 1px solid #eee;
 }
+
 .bottom div {
   flex: 1;
   text-align: center;
   font-size: 14px;
   color: #999;
 }
+
 .bottom div:first-child {
   color: #ffc107;
 }
+
 .strikethrough {
   text-decoration: line-through;
   color: #999;

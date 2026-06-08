@@ -32,14 +32,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useCartStore } from '@/stores/cart'
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {useCartStore} from '@/stores/cart'
 
 const router = useRouter()
 const cartStore = useCartStore()
 
-// 从购物车 Store 读取实际支付金额
 const payAmount = computed(() => cartStore.totalPrice)
 
 const goToOrders = () => {
@@ -61,18 +60,15 @@ const goToOrders = () => {
   overflow-y: auto;
 }
 
-/* ========== 灰色背景大容器 ========== */
 .gray-wrapper {
   background: #f3f6f8;
   min-height: 100%;
 }
 
-/* ========== 白色内容块 ========== */
 .white-block {
   background: #fff;
 }
 
-/* ========== 顶部空白 + 返回箭头 ========== */
 .spacer-28 {
   width: 100%;
   height: 28px;
@@ -93,7 +89,6 @@ const goToOrders = () => {
   color: #111920;
 }
 
-/* ========== 支付成功内容 ========== */
 .success-block {
   padding-bottom: 24px;
 }
@@ -153,7 +148,6 @@ const goToOrders = () => {
   color: #999;
 }
 
-/* ========== 完成按钮 ========== */
 .btn-block {
   padding: 12px 16px;
 }
@@ -174,7 +168,6 @@ const goToOrders = () => {
   opacity: 0.9;
 }
 
-/* ========== 灰色间距 ========== */
 .gray-spacer {
   width: 100%;
   height: 20px;

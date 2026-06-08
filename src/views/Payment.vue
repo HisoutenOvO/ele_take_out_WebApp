@@ -1,8 +1,6 @@
 <template>
   <div class="page">
-    <!-- 可滚动内容区域 -->
     <div class="scroll-area">
-      <!-- 第一块：剩余支付时间 -->
       <div class="countdown-section">
         <div class="countdown-row">
           <span class="countdown-label">剩余支付时间</span>
@@ -10,7 +8,6 @@
         </div>
       </div>
 
-      <!-- 第二块：总金额 -->
       <div class="amount-section">
         <div class="amount-row">
           <span class="amount-symbol">￥</span>
@@ -21,9 +18,7 @@
         </div>
       </div>
 
-      <!-- 第三块：支付方式 -->
       <div class="payment-methods">
-        <!-- 支付宝 -->
         <div class="payment-row" :class="{ active: payMethod === 1 }" @click="payMethod = 1">
           <img src="/img/alipay.png" class="payment-icon" alt="支付宝" />
           <span class="payment-text">支付宝</span>
@@ -32,7 +27,6 @@
           </div>
         </div>
 
-        <!-- 微信 -->
         <div class="payment-row" :class="{ active: payMethod === 0 }" @click="payMethod = 0">
           <img src="/img/wechat.png" class="payment-icon" alt="微信" />
           <span class="payment-text">微信</span>
@@ -43,62 +37,49 @@
       </div>
     </div>
 
-    <!-- 底部固定区域 -->
     <div class="bottom-bar">
       <button class="pay-btn" @click="handlePay">确认支付</button>
     </div>
   </div>
 </template>
 
-<script setup>import { ref, computed, onMounted, onUnmounted } from 'vue'
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useCartStore } from '@/stores/cart'
-import { GetShopDetail } from '@/api/shop'
-import { GetCartList } from '@/api/cart'
-import {PayOrder} from '@/api/orders'
+import { PayOrder, GetOrderDetail } from '@/api/orders'
+import { ElMessage } from 'element-plus'
 
-const cartStore = useCartStore()
 const router = useRouter()
 const route = useRoute()
 const orderId = Number(route.params.orderId)
 
-// 支付方式：alipay / wechat
 const payMethod = ref(1)
-
-// 剩余秒数（15分钟 = 900秒）
 const remainingSeconds = ref(900)
 let timer = null
 
-// 格式化倒计时
 const formattedTime = computed(() => {
   const m = Math.floor(remainingSeconds.value / 60).toString().padStart(2, '0')
   const s = (remainingSeconds.value % 60).toString().padStart(2, '0')
   return `${m}:${s}`
 })
 
-// ========== 总金额和商家信息 ==========
 const totalAmount = ref(0)
 const shopName = ref('')
 
 const loadPaymentData = async () => {
-
-  const shopId = Number(route.query.shopId) || Number(localStorage.getItem('currentShopId'))
-  const deliveryFee = ref(0)
-  const packingFee = ref(1)
-
-  // 获取商家名称
-  const shopResult = await GetShopDetail(shopId)
-  if (shopResult.code === 200) {
-    shopName.value = shopResult.data.name
-    deliveryFee.value = shopResult.data.deliveryFee
+  if (!orderId) {
+    ElMessage.error('订单不存在')
+    router.push('/')
+    return
   }
-
-  // 获取购物车数据
-  const cartResult = await GetCartList(shopId)
-  if (cartResult.code === 200 && cartResult.data.length > 0) {
-    totalAmount.value = cartResult.data.reduce((sum, item) => sum + item.amount * item.number, 0) - 19 + deliveryFee.value + packingFee.value
+  const result = await GetOrderDetail(orderId)
+  if (result.code === 200) {
+    const order = result.data.order || result.data
+    totalAmount.value = order.actualPayment || order.totalPrice || 0
+    shopName.value = order.shopName || ''
+  } else {
+    ElMessage.error(result.msg || '获取订单失败')
   }
-
 }
 
 onMounted(() => {
@@ -117,9 +98,16 @@ onUnmounted(() => {
 })
 
 const handlePay = async () => {
-  console.log('paymethod',payMethod.value)
-  await PayOrder(orderId,payMethod.value);
-  await router.push('/pay-success')
+  try {
+    const result = await PayOrder(orderId, payMethod.value)
+    if (result.code === 200) {
+      router.push(`/pay-success/${orderId}`)
+    } else {
+      ElMessage.error(result.msg || '支付失败')
+    }
+  } catch {
+    ElMessage.error('网络错误，请稍后重试')
+  }
 }
 </script>
 
@@ -137,7 +125,6 @@ const handlePay = async () => {
   overflow-y: auto;
 }
 
-/* ========== 第一块：倒计时 ========== */
 .countdown-section {
   width: 100%;
   height: 49px;
@@ -165,7 +152,6 @@ const handlePay = async () => {
   color: #191919;
 }
 
-/* ========== 第二块：总金额 ========== */
 .amount-section {
   width: 100%;
   padding: 5px 0 8px;
@@ -205,7 +191,6 @@ const handlePay = async () => {
   color: #999;
 }
 
-/* ========== 第三块：支付方式 ========== */
 .payment-methods {
   width: 406px;
   margin: 5px 12px;
@@ -265,7 +250,6 @@ const handlePay = async () => {
   border-color: #ff6200;
 }
 
-/* ========== 底部固定区域 ========== */
 .bottom-bar {
   flex-shrink: 0;
   width: 100%;

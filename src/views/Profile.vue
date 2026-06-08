@@ -1,11 +1,9 @@
 <template>
   <div class="page">
-    <!-- 顶部白条 -->
     <div class="top-bar">
       <h1 class="logo">闪购</h1>
     </div>
 
-    <!-- 中间可滚动区域 -->
     <div class="scroll-area">
       <div class="info-row">
         <div class="info-left">
@@ -18,10 +16,10 @@
       </div>
 
       <div class="feature-row">
-        <div class="feature-item">
+        <div class="feature-item" @click="router.push('/address-list')">
           <div class="feature-content">
-            <span class="feature-icon">👛</span>
-            <span class="feature-label">我的资产</span>
+            <span class="feature-icon">📍</span>
+            <span class="feature-label">收货地址</span>
           </div>
         </div>
         <div class="divider-line"></div>
@@ -40,10 +38,9 @@
           </div>
         </div>
       </div>
-      <div style="height: 600px; background: transparent;"> </div>
+      <div style="height: 600px; background: transparent;"></div>
     </div>
 
-    <!-- 退出登录弹窗 -->
     <div v-if="showLogout" class="modal-overlay" @click="showLogout = false">
       <div class="modal-box" @click.stop>
         <p class="modal-text">确定要退出登录吗？</p>
@@ -54,28 +51,27 @@
       </div>
     </div>
 
-    <!-- 底部导航 -->
     <div class="bottom-wrapper">
-      <BottomNav />
+      <BottomNav/>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import {ref} from 'vue'
+import {useRouter} from 'vue-router'
 import BottomNav from '@/components/BottomNav.vue'
+import {cartStore} from "@/stores/cartStore.js"
 
 const router = useRouter()
 const showLogout = ref(false)
 
 const handleLogout = () => {
   showLogout.value = false
-  // 清除所有登录状态
   localStorage.removeItem('token')
   localStorage.removeItem('user')
   localStorage.removeItem('role')
-  // 跳转到登录页
+  cartStore.clear()
   router.push('/login')
 }
 </script>
@@ -138,8 +134,15 @@ html, body {
   gap: 10px;
 }
 
-.rose-icon { font-size: 24px; }
-.phone-number { font-size: 16px; color: #333; font-weight: 500; }
+.rose-icon {
+  font-size: 24px;
+}
+
+.phone-number {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
 
 .account-btn {
   font-size: 13px;
@@ -177,10 +180,26 @@ html, body {
   text-align: center;
 }
 
-.feature-icon { font-size: 28px; }
-.feature-label { font-size: 13px; color: #333; font-weight: 500; }
-.feature-title { font-size: 16px; font-weight: 700; color: #222; }
-.feature-subtitle { font-size: 11px; color: #999; }
+.feature-icon {
+  font-size: 28px;
+}
+
+.feature-label {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+}
+
+.feature-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #222;
+}
+
+.feature-subtitle {
+  font-size: 11px;
+  color: #999;
+}
 
 .divider-line {
   width: 1px;
@@ -191,8 +210,11 @@ html, body {
 
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.4);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -207,8 +229,17 @@ html, body {
   text-align: center;
 }
 
-.modal-text { font-size: 16px; color: #333; margin-bottom: 20px; }
-.modal-btns { display: flex; gap: 12px; justify-content: center; }
+.modal-text {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.modal-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
 
 .btn-cancel {
   padding: 8px 24px;

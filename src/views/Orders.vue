@@ -292,22 +292,28 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 8px;
 }
 
 .goods-content {
   font-size: 15px;
   color: #222;
   font-weight: 500;
-  max-width: 70%;
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
 }
 
 .goods-price {
   font-size: 18px;
   font-weight: 700;
   color: #222;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .info-row2 {

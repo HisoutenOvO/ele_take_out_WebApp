@@ -147,7 +147,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { GetOrderDetail } from '@/api/orders'
-import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -182,7 +181,7 @@ const loadOrderDetail = async () => {
       orderData.address.phone = data.address.phone
     }
   } else {
-    ElMessage.error(result.msg)
+    toast(result.msg, 'error')
   }
 }
 

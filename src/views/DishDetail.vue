@@ -1,170 +1,127 @@
 <template>
   <div class="page">
-    <!-- 返回按钮 -->
-    <div
-        class="back-btn-fixed"
-        :style="{ color: backBtnColor }"
-        @click="$router.back()"
-    >
+    <div class="back-btn-fixed" :style="{ color: backBtnColor }" @click="$router.back()">
       <i class="fas fa-chevron-left"></i>
     </div>
-
-    <!-- 可滚动区域 -->
-    <div
-        class="scroll-area"
-        ref="scrollAreaRef"
-        @scroll="handleScroll"
-    >
-      <!-- 顶部菜品大图 430×430 -->
+    <div class="scroll-area" ref="scrollAreaRef" @scroll="handleScroll">
       <div class="dish-hero">
-        <img :src="dishInfo.image" class="hero-img" alt="菜品图" />
+        <img :src="dishInfo.image" class="hero-img" alt="菜品图"/>
       </div>
-
-      <!-- 菜名容器 -->
       <div class="dish-info-card">
-        <!-- 第一行：价格区域（渐变背景） -->
         <div class="price-row">
           <div class="price-wrapper">
             <span class="price-symbol">￥</span>
             <span class="price-number">{{ dishInfo.price }}</span>
           </div>
         </div>
-
-        <!-- 第二行：标题 -->
         <div class="title-row">
           <span class="dish-title">{{ dishInfo.name }}</span>
         </div>
-
-        <!-- 第三行：月售 + 加购按钮 / 加减组件 -->
         <div class="action-row">
           <span class="monthly-sales">月售{{ dishInfo.monthlySales }}</span>
-
-          <button
-              v-if="quantity === 0"
-              class="add-cart-btn"
-              @click="handleAddToCart"
-          >
-            ＋加入购物车
-          </button>
-
+          <button v-if="quantity === 0" class="add-cart-btn" @click="handleAddToCart">＋加入购物车</button>
           <div v-else class="cart-controls">
-            <div class="minus-btn" @click="handleMinus">
-              <i class="fas fa-minus"></i>
-            </div>
+            <div class="minus-btn" @click="handleMinus"><i class="fas fa-minus"></i></div>
             <span class="quantity-text">{{ quantity }}</span>
-            <div class="add-btn" @click="handleAddToCart">
-              <i class="fas fa-plus"></i>
-            </div>
+            <div class="add-btn" @click="handleAddToCart"><i class="fas fa-plus"></i></div>
           </div>
         </div>
       </div>
-
-      <!-- 第一部分：详情/评价标签栏 -->
       <div class="tab-bar-dish">
         <span class="tab-item active">详情</span>
         <span class="tab-item">评价</span>
       </div>
-
-      <!-- 第二部分：详情容器 -->
       <div class="detail-container">
-        <!-- 商品详情标题 -->
         <div class="detail-title">商品详情</div>
-
-        <!-- 具体信息容器 -->
         <div class="detail-content">
-          <!-- 第一行：商品描述（可能两行） -->
           <div class="detail-row multi-line">
             <span class="detail-label">商品描述</span>
             <span class="detail-value">{{ dishInfo.description }}</span>
           </div>
-
-          <!-- 第二行：原料 -->
           <div class="detail-row single-line">
             <span class="detail-label">原料</span>
             <span class="detail-value">{{ dishInfo.ingredients }}</span>
           </div>
-
-          <!-- 第三行：份量 -->
           <div class="detail-row single-line">
             <span class="detail-label">份量</span>
             <span class="detail-value">{{ dishInfo.serving }}</span>
           </div>
-
-          <!-- 第四行：价格说明（只有左侧） -->
           <div class="detail-row single-line no-value">
             <span class="detail-label">价格说明</span>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- 底部购物车栏 -->
-    <CartBar
-        :deliveryFee="shopInfo.deliveryFee"
-        :minPrice="shopInfo.minPrice"
-    />
+    <CartBar :deliveryFee="shopInfo.deliveryFee" :minPrice="shopInfo.minPrice"/>
   </div>
 </template>
 
 <script setup>
-import {ref, computed, onMounted} from 'vue'
-import { useRoute } from 'vue-router'
-import { useCartStore } from '@/stores/cart'
+import {ref, computed, onMounted, watch} from 'vue'
+import {useRoute} from 'vue-router'
 import CartBar from '@/components/CartBar.vue'
-import { GetDishById } from '@/api/dish'
-import { GetShopDetail } from '@/api/shop'
-import {ElMessage} from "element-plus";// 引入 cartStore
-import { cartStore } from '@/stores/cartStore'
-import {AddCart, DeleteCart} from "@/api/cart.js";
-
-// 数量直接从 Store 中获取
-const quantity = computed(() => cartStore.getQuantity(dishInfo.value.id))
-
-// 加购操作，操作后刷新 Store
-const handleAddToCart = async () => {
-  await AddCart({ dishId: dishInfo.value.id, shopId: dishInfo.value.shopId || shopId.value })
-  await cartStore.load(dishInfo.value.shopId || shopId.value)
-}
-
-// 减购操作，操作后刷新 Store
-// 减购操作
-const handleMinus = async () => {
-  await DeleteCart({ dishId: dishInfo.value.id, shopId: dishInfo.value.shopId || shopId.value })
-  await cartStore.load(dishInfo.value.shopId || shopId.value)
-}
+import {GetDishById} from '@/api/dish'
+import {GetShopDetail} from '@/api/shop'
+import {ElMessage} from 'element-plus'
+import {AddCart, DeleteCart, GetCartList} from '@/api/cart'
+import {useCartRefresher} from '@/stores/cartRefresher'
 
 const route = useRoute()
 const dishId = route.params.id
-const shopId = ref(1)
 const dishInfo = ref({})
+const shopInfo = ref({deliveryFee: 5, minPrice: 88})
+const shopId = ref(null)
 
+const {version, bump} = useCartRefresher()
+const cartItems = ref([])
 
-const search = async() => {
+const loadCart = async () => {
+  if (!shopId.value) return
+  const result = await GetCartList(shopId.value)
+  if (result.code === 200) {
+    cartItems.value = result.data
+  }
+}
+
+watch(version, () => {
+  loadCart()
+})
+
+const quantity = computed(() => {
+  const item = cartItems.value.find(i => i.dishId === dishInfo.value.id)
+  return item ? item.number : 0
+})
+
+const handleAddToCart = async () => {
+  await AddCart({dishId: dishInfo.value.id, shopId: shopId.value})
+  await loadCart()
+  bump()
+}
+
+const handleMinus = async () => {
+  await DeleteCart(dishInfo.value.id)
+  await loadCart()
+  bump()
+}
+
+const search = async () => {
   const result = await GetDishById(dishId)
-  if(result.code === 200){
+  if (result.code === 200) {
     dishInfo.value = result.data
     shopId.value = result.data.shopId
-  }else{
+  } else {
     ElMessage.error(result.msg)
   }
 }
 
-const GetShopInfo = async() => {
+const GetShopInfo = async () => {
   const result = await GetShopDetail(shopId.value)
-  if(result.code === 200){
+  if (result.code === 200) {
     shopInfo.value.deliveryFee = result.data.deliveryFee
     shopInfo.value.minPrice = result.data.minPrice
   }
 }
 
-const shopInfo = ref({
-  deliveryFee: 5,
-  minPrice: 88
-})
-
-
-
-// 返回按钮动画
 const scrollAreaRef = ref(null)
 const scrollTop = ref(0)
 const transitionEnd = 150
@@ -184,9 +141,10 @@ const handleScroll = () => {
   }
 }
 
-onMounted(async()=>{
-  await search();
-  await GetShopInfo();
+onMounted(async () => {
+  await search()
+  await GetShopInfo()
+  await loadCart()
 })
 </script>
 
@@ -216,7 +174,6 @@ onMounted(async()=>{
   overflow-y: auto;
 }
 
-/* 顶部大图 */
 .dish-hero {
   width: 100%;
   max-width: 430px;
@@ -230,7 +187,6 @@ onMounted(async()=>{
   object-fit: cover;
 }
 
-/* 菜名容器 */
 .dish-info-card {
   width: 402.5px;
   margin: 9.173px 13.76px 0;
@@ -345,7 +301,6 @@ onMounted(async()=>{
   cursor: pointer;
 }
 
-/* ===== 第一部分：详情/评价标签栏 ===== */
 .tab-bar-dish {
   width: 430px;
   height: 49.03px;
@@ -383,7 +338,6 @@ onMounted(async()=>{
   border-radius: 2px;
 }
 
-/* ===== 第二部分：详情容器 ===== */
 .detail-container {
   width: 402.5px;
   margin: 9.17332px 13.76px 0;
@@ -416,8 +370,7 @@ onMounted(async()=>{
   font-size: 14.906px;
   color: #999;
   flex-shrink: 0;
-  white-space: nowrap;      /* 新增：永远单行 */
-  /* letter-spacing: 2.84px;  删掉这行 */
+  white-space: nowrap;
 }
 
 .detail-value {
@@ -428,12 +381,10 @@ onMounted(async()=>{
   line-height: 1.4;
 }
 
-/* 第一行（可能多行文本） */
 .detail-row.multi-line {
   margin-bottom: 13.76px;
 }
 
-/* 第二行和第三行：单行，有底margin 13.76px */
 .detail-row.single-line {
   height: 21.79px;
   align-items: center;
@@ -453,7 +404,6 @@ onMounted(async()=>{
   text-overflow: ellipsis;
 }
 
-/* 第四行：只有左侧，无margin */
 .detail-row.no-value {
   margin-bottom: 0;
 }

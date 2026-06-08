@@ -63,13 +63,20 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import BottomNav from '@/components/BottomNav.vue'
 
+const router = useRouter()
 const showLogout = ref(false)
 
 const handleLogout = () => {
   showLogout.value = false
-  console.log('执行退出登录逻辑')
+  // 清除所有登录状态
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  localStorage.removeItem('role')
+  // 跳转到登录页
+  router.push('/login')
 }
 </script>
 

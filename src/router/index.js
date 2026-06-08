@@ -11,6 +11,7 @@ import Payment from '@/views/Payment.vue'
 import PaySuccess from '@/views/PaySuccess.vue'
 import OrderResult from '@/views/OrderResult.vue'
 import Login from '@/views/Login.vue'
+import Register from '@/views/Register.vue'
 
 const routes = [
     {
@@ -67,6 +68,12 @@ const routes = [
         path: '/order-result/:id',
         name: 'OrderResult',
         component: OrderResult
+    },
+    {
+        path: '/register',
+        name: 'Register',
+        component: Register,
+        meta: { noAuth: true }
     }
 ]
 
@@ -76,18 +83,12 @@ const router = createRouter({
 })
 
 // 全局前置守卫
-router.beforeEach((to, from, next) => {
-    if (to.meta.noAuth) {
-        next()
-        return
-    }
+router.beforeEach((to, from) => {
+    if (to.meta.noAuth) return true
     const token = localStorage.getItem('token')
-    if (token) {
-        next()
-    } else {
-        ElMessage.warning('登录已超时，请重新登录')
-        next('/login')
-    }
+    if (token) return true
+    ElMessage.warning('登录已超时，请重新登录')
+    return '/login'
 })
 
 export default router

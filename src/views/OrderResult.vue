@@ -1,10 +1,8 @@
 <template>
   <div class="page">
-    <!-- 可滚动内容区域 -->
     <div class="scroll-area">
-      <!-- 灰色背景大容器（包裹所有白色内容块） -->
       <div class="gray-wrapper">
-        <!-- 第一块：顶部空白 + 返回箭头 + 客服 -->
+        <!-- 顶部空白 + 返回 + 客服 -->
         <div class="white-block">
           <div class="spacer-28"></div>
           <div class="service-row">
@@ -16,49 +14,43 @@
           </div>
         </div>
 
-        <!-- 第二块：订单状态 -->
+        <!-- 订单状态 -->
         <div class="white-block">
           <div class="status-row">
-            <span class="status-text">{{ orderStatus }}</span>
+            <span class="status-text">{{ orderData.status }}</span>
           </div>
         </div>
 
-        <!-- 第三块：送达地址 -->
+        <!-- 送达地址 -->
         <div class="white-block">
           <div class="address-section">
             <span class="address-label">送至</span>
             <div class="address-info">
-              <span class="address-detail">{{ deliveryAddress }}</span>
-              <span class="address-phone">{{ deliveryPhone }}</span>
+              <span class="address-detail">{{ orderData.address?.detail }}</span>
+              <span class="address-phone">{{ orderData.address?.phone }}</span>
             </div>
           </div>
         </div>
 
-        <!-- 第四块：操作按钮 -->
+        <!-- 操作按钮 -->
         <div class="white-block">
           <div class="action-section">
             <div class="action-item" @click="handleReorder">
-              <span class="action-icon order-icon">
-                <i class="fa-solid fa-receipt"></i>
-              </span>
+              <span class="action-icon order-icon">🛒</span>
               <span class="action-text">再来一单</span>
             </div>
             <div class="action-item" @click="handleCallShop">
-              <span class="action-icon phone-icon">
-                <i class="fa-solid fa-phone"></i>
-              </span>
+              <span class="action-icon phone-icon">📞</span>
               <span class="action-text phone-text">电话商家</span>
             </div>
           </div>
         </div>
 
-        <!-- 第五块：其他服务（上下有灰色间距） -->
+        <!-- 其他服务 -->
         <div class="other-block">
           <div class="other-service-row">
             <div class="service-left">
-              <span class="shield-icon">
-                <i class="fas fa-shield-halved"></i>
-              </span>
+              <span class="shield-icon"><i class="fas fa-shield-halved"></i></span>
               <span class="service-label">其他服务</span>
             </div>
             <div class="service-right">
@@ -67,20 +59,25 @@
             </div>
           </div>
         </div>
+
         <!-- 菜品展示区域 -->
         <div class="white-block dish-show-block">
-          <!-- 第一行：商家名称 -->
+          <!-- 商家名称 -->
           <div class="dish-show-row1">
-            <span class="dish-show-shop">{{ shopName }}</span>
+            <span class="dish-show-shop">{{ orderData.shopName }}</span>
           </div>
 
-          <!-- 第二行：菜品图片 + 共x件 -->
-          <div class="dish-show-row2">
-            <img :src="orderDish.image" class="dish-show-img" alt="菜品图" />
-            <span class="dish-show-count">共{{ orderDish.quantity }}件</span>
+          <!-- 菜品列表（遍历 orderDetailList） -->
+          <div
+              class="dish-show-row2"
+              v-for="dish in orderData.orderDetailList"
+              :key="dish.id"
+          >
+            <img :src="dish.image" class="dish-show-img" alt="菜品图" />
+            <span class="dish-show-count">{{ dish.name }} ×{{ dish.number }}</span>
           </div>
 
-          <!-- 第三行：价格明细 -->
+          <!-- 价格明细 -->
           <div class="dish-show-row3">
             <span class="dish-show-label">价格明细</span>
             <div class="dish-show-prices">
@@ -89,13 +86,14 @@
               <span class="total-discount-amount">{{ totalDiscount }}</span>
               <span class="actual-text">实付</span>
               <span class="actual-symbol">￥</span>
-              <span class="actual-amount">{{ actualPayment }}</span>
+              <span class="actual-amount">{{ orderData.actualPayment }}</span>
             </div>
           </div>
 
           <!-- 灰色分隔线 -->
           <div class="dish-show-divider"></div>
-          <!-- 温馨提示等六行信息 -->
+
+          <!-- 订单信息 -->
           <div class="white-block info-block">
             <div class="info-row">
               <span class="info-label">温馨提示</span>
@@ -104,8 +102,8 @@
             <div class="info-row">
               <span class="info-label">收货信息</span>
               <div class="info-value">
-                <div class="info-value-line">{{ deliveryAddress }}</div>
-                <div class="info-value-line">{{ deliveryPhone }}</div>
+                <div class="info-value-line">{{ orderData.address?.detail }}</div>
+                <div class="info-value-line">{{ orderData.address?.phone }}</div>
               </div>
             </div>
             <div class="info-row">
@@ -118,15 +116,16 @@
             </div>
             <div class="info-row">
               <span class="info-label">下单时间</span>
-              <span class="info-value">{{ orderTime }}</span>
+              <span class="info-value">{{ orderData.createTime }}</span>
             </div>
             <div class="info-row">
               <span class="info-label">订单号</span>
-              <span class="info-value">{{ orderId }}</span>
+              <span class="info-value">{{ orderData.orderNo }}</span>
             </div>
           </div>
         </div>
-        <!-- 第六块：常见问题（上下灰色间距） -->
+
+        <!-- 常见问题 -->
         <div class="faq-block">
           <div class="faq-row">
             <div class="faq-left">
@@ -145,34 +144,59 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { GetOrderDetail } from '@/api/orders'
+import { ElMessage } from 'element-plus'
 
-import {} from '@/api/orders'
-
-const shopName = ref('必胜客之超级强迪')
-
-const orderDish = ref({
-  image: '/img/sp02.png',
-  quantity: 2
-})
-
-const totalDiscount = ref('19.00')
-const actualPayment = ref('128.00')
 const route = useRoute()
 const router = useRouter()
-const orderId = route.params.id+3065032035165
+const orderId = Number(route.params.id)
+
+const orderData = reactive({
+  shopName: '',
+  status: '',
+  actualPayment: 0,
+  createTime: '',
+  orderDetailList: [],
+  address: {
+    detail: '',
+    phone: ''
+  },
+  orderNo: ''
+})
+const totalDiscount = ref(19)   // 优惠暂时写死
+
+const loadOrderDetail = async () => {
+  const result = await GetOrderDetail(orderId)
+  if (result.code === 200) {
+    const data = result.data
+    orderData.shopName = data.shopName
+    orderData.status = data.status
+    orderData.actualPayment = data.actualPayment
+    orderData.createTime = data.createTime
+    orderData.orderDetailList = data.orderDetailList
+    orderData.orderNo = data.orderNo
+    if (data.address) {
+      orderData.address.detail = data.address.detail
+      orderData.address.phone = data.address.phone
+    }
+  } else {
+    ElMessage.error(result.msg)
+  }
+}
 
 const goToOrders = () => {
   router.push('/orders')
 }
 
-const orderStatus = ref('订单已完成')
-const deliveryAddress = ref('梦想小镇创业大街1号楼101室')
-const deliveryPhone = ref('138****1234')
-const orderTime = ref('2026-05-26 14:30:00')  // 模拟下单时间
 const handleReorder = () => { console.log('再来一单') }
 const handleCallShop = () => { console.log('电话商家') }
+
+onMounted(() => {
+  console.log(orderData.orderNo)
+  loadOrderDetail()
+})
 </script>
 
 <style scoped>

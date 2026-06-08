@@ -17,10 +17,6 @@
               </div>
             </div>
             <div class="success-title">支付成功</div>
-            <div class="success-amount">
-              <span class="amount-symbol">￥</span>
-              <span class="amount-number">{{ payAmount }}</span>
-            </div>
             <div class="success-hint">感谢您的购买，祝您用餐愉快</div>
           </div>
         </div>

@@ -581,6 +581,7 @@ onMounted(async()=>{
 .col-divider { width: 1px; height: 28px; background: #e0e0e0; flex-shrink: 0; align-self: center; }
 
 /* 公告栏容器：保持 padding，确保左右有间隙 */
+
 .notice-bar {
   margin-top: 8px;
   padding: 0 16px;
@@ -590,7 +591,8 @@ onMounted(async()=>{
   overflow: hidden;
 }
 
-/* 滚动容器：取消 flex 和 max-content，让文字从右侧开始滚动 */
+
+
 .notice-scroll {
   display: flex;
   white-space: nowrap;
@@ -746,7 +748,7 @@ onMounted(async()=>{
 /* 右侧菜品列表 */
 .dish-list {
   flex: 1;
-  overflow-y: auto;          /* 始终可滚动，保证滚动事件触发 */
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: #fff;
 }

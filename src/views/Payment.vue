@@ -24,20 +24,20 @@
       <!-- 第三块：支付方式 -->
       <div class="payment-methods">
         <!-- 支付宝 -->
-        <div class="payment-row" :class="{ active: payMethod === 'alipay' }" @click="payMethod = 'alipay'">
+        <div class="payment-row" :class="{ active: payMethod === 1 }" @click="payMethod = 1">
           <img src="/img/alipay.png" class="payment-icon" alt="支付宝" />
           <span class="payment-text">支付宝</span>
-          <div class="radio-circle" :class="{ active: payMethod === 'alipay' }">
-            <i v-if="payMethod === 'alipay'" class="fas fa-check"></i>
+          <div class="radio-circle" :class="{ active: payMethod === 1 }">
+            <i v-if="payMethod === 1" class="fas fa-check"></i>
           </div>
         </div>
 
         <!-- 微信 -->
-        <div class="payment-row" :class="{ active: payMethod === 'wechat' }" @click="payMethod = 'wechat'">
+        <div class="payment-row" :class="{ active: payMethod === 0 }" @click="payMethod = 0">
           <img src="/img/wechat.png" class="payment-icon" alt="微信" />
           <span class="payment-text">微信</span>
-          <div class="radio-circle" :class="{ active: payMethod === 'wechat' }">
-            <i v-if="payMethod === 'wechat'" class="fas fa-check"></i>
+          <div class="radio-circle" :class="{ active: payMethod === 0 }">
+            <i v-if="payMethod === 0" class="fas fa-check"></i>
           </div>
         </div>
       </div>
@@ -50,15 +50,20 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+<script setup>import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { GetShopDetail } from '@/api/shop'
+import { GetCartList } from '@/api/cart'
+import {PayOrder} from '@/api/orders'
+
 const cartStore = useCartStore()
 const router = useRouter()
+const route = useRoute()
+const orderId = Number(route.params.orderId)
 
 // 支付方式：alipay / wechat
-const payMethod = ref('alipay')
+const payMethod = ref(1)
 
 // 剩余秒数（15分钟 = 900秒）
 const remainingSeconds = ref(900)
@@ -71,7 +76,33 @@ const formattedTime = computed(() => {
   return `${m}:${s}`
 })
 
+// ========== 总金额和商家信息 ==========
+const totalAmount = ref(0)
+const shopName = ref('')
+
+const loadPaymentData = async () => {
+
+  const shopId = Number(route.query.shopId) || Number(localStorage.getItem('currentShopId'))
+  const deliveryFee = ref(0)
+  const packingFee = ref(1)
+
+  // 获取商家名称
+  const shopResult = await GetShopDetail(shopId)
+  if (shopResult.code === 200) {
+    shopName.value = shopResult.data.name
+    deliveryFee.value = shopResult.data.deliveryFee
+  }
+
+  // 获取购物车数据
+  const cartResult = await GetCartList(shopId)
+  if (cartResult.code === 200 && cartResult.data.length > 0) {
+    totalAmount.value = cartResult.data.reduce((sum, item) => sum + item.amount * item.number, 0) - 19 + deliveryFee.value + packingFee.value
+  }
+
+}
+
 onMounted(() => {
+  loadPaymentData()
   timer = setInterval(() => {
     if (remainingSeconds.value > 0) {
       remainingSeconds.value--
@@ -85,12 +116,10 @@ onUnmounted(() => {
   clearInterval(timer)
 })
 
-// 模拟数据
-const totalAmount = computed(() => cartStore.totalPrice)
-const shopName = ref('必胜客之超级强迪')
-
-const handlePay = () => {
-  router.push('/pay-success')
+const handlePay = async () => {
+  console.log('paymethod',payMethod.value)
+  await PayOrder(orderId,payMethod.value);
+  await router.push('/pay-success')
 }
 </script>
 

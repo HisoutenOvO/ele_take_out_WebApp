@@ -34,7 +34,7 @@
       </div>
 
       <!-- 卡片列表 -->
-      <div v-for="shop in filteredShops" :key="shop.id" class="card" @click="goToShop(shop.id)">
+      <div v-for="shop in shops" :key="shop.id" class="card" @click="goToShop(shop.id)">
         <!-- 左侧图片：直接放emoji，无背景，占1/3 -->
         <img :src="shop.image" class="card-emoji" alt="商家图片" />
         <!-- 右侧详细信息容器 -->
@@ -91,57 +91,37 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted} from 'vue'
+import { ref, onMounted } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
 import { useRouter } from 'vue-router'
-import { GetShopList} from '@/api/shop'
-import {ElMessage} from "element-plus";
+import { GetShopList } from '@/api/shop'
+import { ElMessage } from 'element-plus'
+
 const router = useRouter()
 
 const goToShop = (id) => {
   router.push(`/shop/${id}`)
 }
+
 const searchKeyword = ref('')
-
-const search = async() => {
-  const result = await GetShopList('')
-  if(result.code === 200){
-      shops.value = result.data
-  }else{
-    ElMessage.error(result.msg || "请求出错")
-  }
-}
-
 const shops = ref([])
 const discounts = ref(['满65减5', '满100减15', '新客立减10'])
-const filteredShops = computed(() => {
-  const keyword = searchKeyword.value.trim().toLowerCase()
-  if (!keyword) return shops.value
-  return shops.value.filter(shop =>
-      shop.name.toLowerCase().includes(keyword)
-  )
-})
 
-const getShopImg = (name) => {
-  const map = {
-    '必胜客': '/img/sj08.png',
-    '麦当劳': '/img/sj09.png',
-    '海底捞': '/img/sp01.png',
-    '瑞幸咖啡': '/img/sp02.png',
-    '肯德基': '/img/sp03.png'
+const search = async (keyword = '') => {
+  const result = await GetShopList(keyword)
+  if (result.code === 200) {
+    shops.value = result.data
+  } else {
+    ElMessage.error(result.msg )
   }
-  return map[name] || '/img/sj01.png'
 }
 
 const handleSearch = () => {
-  if (searchKeyword.value.trim()) {
-    console.log('搜索:', searchKeyword.value)
-    search(keyword)
-  }
+  search(searchKeyword.value.trim())
 }
 
-onMounted(()=>{
-search()
+onMounted(() => {
+  search()
 })
 </script>
 

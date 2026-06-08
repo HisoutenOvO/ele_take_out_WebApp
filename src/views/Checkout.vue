@@ -314,13 +314,14 @@
   </div>
 </template>
 
-<script setup>import { ref, computed, onMounted, onUnmounted } from 'vue'
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import router from "@/router/index.js"
 import { GetAddressList } from '@/api/address'
 import { ElMessage } from "element-plus"
 import { GetShopDetail } from '@/api/shop'
 import { GetCartList } from '@/api/cart'
-
+import {SubmitOrder} from '@/api/orders'
 // ========== 数据 ==========
 const shopName = ref('')
 const deliveryFee = ref(0)
@@ -336,7 +337,6 @@ const shopId = localStorage.getItem('currentShopId')
 // ========== 加载所有数据 ==========
 const loadData = async () => {
 
-  // 1. 获取购物车（后端根据 token 自动识别用户）
   const cartResult = await GetCartList(shopId)
   if (cartResult.code !== 200 || !cartResult.data || cartResult.data.length === 0) {
     ElMessage.warning('购物车为空，请先添加商品')
@@ -344,12 +344,7 @@ const loadData = async () => {
     return
   }
 
-
-  // 2. 从购物车第一条数据中取出 shopId
-  console.log('提取到的 shopId:', shopId)     // 这时打印才是正确的
-
-  // 3. 用 shopId 获取商家信息
-  const shopResult = await GetShopDetail(shopId)   // 直接传变量，不用 .value
+  const shopResult = await GetShopDetail(shopId)
   if (shopResult.code === 200) {
     shopName.value = shopResult.data.name
     deliveryFee.value = shopResult.data.deliveryFee
@@ -393,7 +388,21 @@ const noticeList = ref(['适量点餐，环保健康', '远距离配送，配送
 const currentNotice = ref(0)
 let noticeTimer = null
 
-const handleSubmit = () => router.push('/payment')
+
+const handleSubmit = async() =>{
+  if (currentAddressId.value === null || currentAddressId.value === undefined) {
+    ElMessage.warning('请先选择收货地址')
+    return
+  }
+
+  const order = {
+    shopId: shopId,
+    addressId: currentAddressId.value
+  }
+  const result = await SubmitOrder(order)
+  const orderId= result.data.id
+  router.push(`/payment/${orderId}`)
+}
 
 onMounted(async () => {
   await loadData()

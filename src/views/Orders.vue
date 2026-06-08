@@ -2,19 +2,16 @@
   <div class="page">
     <!-- 顶部固定区域 -->
     <div class="top-fixed">
-      <!-- 搜索框 -->
       <div class="search-bar">
         <i class="fa-brands fa-sistrix search-icon" style="flex:0 0 6vw;"></i>
         <input
             v-model="searchKeyword"
             placeholder="搜索订单"
             class="search-input"
-            @keyup.enter="handleSearch"
         />
         <button class="search-btn" @click="handleSearch">搜索</button>
       </div>
 
-      <!-- 三个状态标签 -->
       <div class="tabs">
         <div
             v-for="tab in tabs"
@@ -32,22 +29,20 @@
     <!-- 中间可滚动订单列表 -->
     <div class="order-scroll">
       <div v-for="order in filteredOrders" :key="order.id" class="order-card">
-        <!-- 第一行：店家小图 + 名称 + 状态（点击店名跳转商家详情） -->
         <div class="order-header" @click="goToShop(order.shopId)">
           <div class="shop-mini">
-            <img :src="getShopImg(order.shopName)" class="mini-img" />
+            <img :src="order.shopImage" class="mini-img" alt="店铺图片" />
             <span class="shop-name">{{ order.shopName }}</span>
           </div>
-          <span class="order-status">{{ order.statusText }}</span>
+          <span class="order-status">{{ order.status }}</span>
         </div>
 
-        <!-- 第二行：商品大图 + 信息（点击菜品跳转订单结果页） -->
         <div class="order-body" @click="goToOrderDetail(order.id)">
-          <img :src="order.goodsImg" class="goods-img" />
+          <img :src="order.dishImage" class="goods-img" alt="商品图片" />
           <div class="goods-info">
             <div class="info-row1">
-              <span class="goods-content">{{ order.content }}</span>
-              <span class="goods-price">¥{{ order.price }}</span>
+              <span class="goods-content">{{ order.dishName }}</span>
+              <span class="goods-price">¥{{ order.actualPayment }}</span>
             </div>
             <div class="info-row2">
               <span class="goods-count">×{{ order.quantity }}</span>
@@ -59,24 +54,23 @@
       <div class="end-text" v-else>— 已经到底了 —</div>
     </div>
 
-    <!-- 底部导航 -->
     <BottomNav />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
 import { useRouter } from 'vue-router'
+import { GetOrderList } from '@/api/orders'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 
-// 点击店名 → 跳转商家详情
 const goToShop = (id) => {
   router.push(`/shop/${id}`)
 }
 
-// 点击菜品 → 跳转订单结果页
 const goToOrderDetail = (orderId) => {
   router.push(`/order-result/${orderId}`)
 }
@@ -86,78 +80,34 @@ const activeTab = ref('all')
 
 const tabs = [
   { key: 'all', label: '全部' },
-  { key: 'ongoing', label: '进行中' },
-  { key: 'refunded', label: '已退款' }
+  { key: '待支付', label: '待支付' },
+  { key: '已完成', label: '已完成' }
 ]
 
-const orders = ref([
-  {
-    id: 1,
-    shopId: 1,
-    shopName: '必胜客',
-    status: 'delivered',
-    statusText: '已送达',
-    goodsImg: '/img/sj08.png',
-    content: '超级至尊披萨+可乐',
-    price: 128,
-    quantity: 2
-  },
-  {
-    id: 2,
-    shopId: 2,
-    shopName: '麦当劳',
-    status: 'canceled',
-    statusText: '已取消',
-    goodsImg: '/img/sj07.png',
-    content: '巨无霸套餐',
-    price: 42,
-    quantity: 1
-  },
-  {
-    id: 3,
-    shopId: 3,
-    shopName: '瑞幸咖啡',
-    status: 'ongoing',
-    statusText: '配送中',
-    goodsImg: '/img/sp06.png',
-    content: '生椰拿铁+厚乳拿铁',
-    price: 58,
-    quantity: 2
-  },
-  {
-    id: 4,
-    shopId: 4,
-    shopName: '海底捞',
-    status: 'refunded',
-    statusText: '已退款',
-    goodsImg: '/img/sp05.png',
-    content: '火锅底料套餐',
-    price: 299,
-    quantity: 1
-  }
-])
+const orders = ref([])
 
-const getShopImg = (name) => {
-  const map = {
-    '必胜客': '/img/sj08.png',
-    '麦当劳': '/img/sj09.png',
-    '海底捞': '/img/sp03.png',
-    '瑞幸咖啡': '/img/sp01.png',
-    '肯德基': '/img/sp02.png'
+const search = async () => {
+  const result = await GetOrderList()
+  if (result.code === 200) {
+    orders.value = result.data
+  } else {
+    ElMessage.error(result.msg || '获取订单失败')
   }
-  return map[name] || '/img/default.png'
 }
 
 const filteredOrders = computed(() => {
   let list = orders.value
-  if (activeTab.value === 'ongoing') {
-    list = list.filter(o => o.status === 'ongoing')
-  } else if (activeTab.value === 'refunded') {
-    list = list.filter(o => o.status === 'refunded')
+
+  if (activeTab.value !== 'all') {
+    list = list.filter(o => o.status === activeTab.value)
   }
+
   if (searchKeyword.value.trim()) {
     const kw = searchKeyword.value.trim().toLowerCase()
-    list = list.filter(o => o.shopName.toLowerCase().includes(kw) || o.content.toLowerCase().includes(kw))
+    list = list.filter(o =>
+        o.shopName.toLowerCase().includes(kw) ||
+        o.dishName.toLowerCase().includes(kw)
+    )
   }
   return list
 })
@@ -167,6 +117,10 @@ const switchTab = (key) => {
 }
 
 const handleSearch = () => {}
+
+onMounted(() => {
+  search()
+})
 </script>
 
 <style scoped>

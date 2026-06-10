@@ -52,7 +52,12 @@
         </div>
       </div>
     </div>
-    <CartBar :deliveryFee="shopInfo.deliveryFee" :minPrice="shopInfo.minPrice"/>
+    <CartBar
+        :cartItems="cartItems"
+        :shopId="shopId"
+        :deliveryFee="shopInfo.deliveryFee"
+        :minPrice="shopInfo.minPrice"
+    />
   </div>
 </template>
 
@@ -99,7 +104,7 @@ const handleAddToCart = async () => {
 }
 
 const handleMinus = async () => {
-  await DeleteCart(dishInfo.value.id)
+  await DeleteCart({ dishId: dishInfo.value.id, shopId: shopId.value })
   await loadCart()
   bump()
 }
